@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Link, useParams } from 'react-router-dom';
 import { 
   Plus, 
   Calendar, 
@@ -30,7 +31,7 @@ interface ScheduledPost {
   status: 'pending' | 'completed';
 }
 
-export default function App() {
+function AppContent() {
   const [isLoggedOut, setIsLoggedOut] = useState(true);
   const [imageUrl, setImageUrl] = useState('');
   const [caption, setCaption] = useState('');
@@ -52,8 +53,6 @@ export default function App() {
       status: 'completed'
     }
   ]);
-
-  const [showLegal, setShowLegal] = useState<{ type: 'tos' | 'privacy' | 'cookie' | null }>({ type: null });
 
   const handleLogin = () => setIsLoggedOut(false);
   const handleLogout = () => setIsLoggedOut(true);
@@ -79,7 +78,7 @@ export default function App() {
     <div className="min-h-screen bg-tiktok-black text-white font-sans selection:bg-tiktok-pink selection:text-white">
       <AnimatePresence mode="wait">
         {isLoggedOut ? (
-          <LandingPage key="landing" onLogin={handleLogin} onOpenLegal={(type: 'tos' | 'privacy' | 'cookie') => setShowLegal({ type })} />
+          <LandingPage key="landing" onLogin={handleLogin} />
         ) : (
           <Dashboard 
             key="dashboard"
@@ -97,172 +96,160 @@ export default function App() {
           />
         )}
       </AnimatePresence>
-
-      <LegalModal 
-        isOpen={showLegal.type !== null} 
-        type={showLegal.type} 
-        onClose={() => setShowLegal({ type: null })} 
-      />
     </div>
   );
 }
 
-// --- Legal Modal Component ---
-function LegalModal({ isOpen, type, onClose }: { isOpen: boolean, type: 'tos' | 'privacy' | 'cookie' | null, onClose: () => void }) {
-  if (!type) return null;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<AppContent />} />
+        <Route path="/legal/:type" element={<LegalPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+// --- Legal Page Component ---
+function LegalPage() {
+  const { type } = useParams();
 
   const getTitle = () => {
     switch(type) {
       case 'tos': return 'Terms of Service (이용약관)';
       case 'privacy': return 'Privacy Policy (개인정보 처리방침)';
       case 'cookie': return 'Cookie Policy (쿠키 정책)';
-      default: return '';
+      default: return 'Legal Information';
     }
   };
 
+  if (!type || !['tos', 'privacy', 'cookie'].includes(type)) {
+    return <div className="p-8 text-white bg-tiktok-black min-h-screen">Document not found</div>;
+  }
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-          />
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            className="relative w-full max-w-4xl max-h-[80vh] bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden flex flex-col shadow-2xl"
-          >
-            <div className="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50">
-              <h2 className="text-2xl font-bold">
-                {getTitle()}
-              </h2>
-              <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full transition-colors text-zinc-500">
-                <Plus className="w-6 h-6 rotate-45" />
-              </button>
-            </div>
-            <div className="flex-grow overflow-y-auto p-8 prose prose-invert max-w-none prose-zinc prose-headings:text-tiktok-cyan prose-strong:text-tiktok-pink pb-20">
-              {type === 'tos' ? (
-                <div className="space-y-12">
-                  <section>
-                    <h3 className="text-xl font-bold border-b border-zinc-800 pb-2 mb-4">English version</h3>
-                    <p><strong>Last Updated: May 1, 2026</strong></p>
-                    <h4>1. Purpose</h4>
-                    <p>These Terms of Service ("Terms") govern your access to and use of gabjagi ("the Service"), a TikTok automation tool that provides image/video scheduling and posting via the TikTok API.</p>
-                    <h4>2. User Obligations</h4>
-                    <p>Users must comply with all applicable local and international laws. You are responsible for maintaining the confidentiality of your account credentials.</p>
-                    <h4>3. TikTok API Compliance</h4>
-                    <p>By using gabjagi, you agree to strictly follow the TikTok Community Guidelines and TikTok Developer Policies. Any violation of TikTok's terms for content or behavior is the sole responsibility of the user.</p>
-                    <h4>4. Automated Content Responsibility</h4>
-                    <p>gabjagi is a tool for scheduling. The user holds 100% ownership and liability for any content published through the service. gabjagi does not endorse or review individual posts.</p>
-                    <h4>5. Limitation of Liability</h4>
-                    <p>gabjagi is provided "as is". We are not responsible for any account suspensions, shadows bans, or data loss resulting from the use of automated tools on TikTok's platform.</p>
-                  </section>
-
-                  <section className="bg-zinc-800/30 p-8 rounded-2xl">
-                    <h3 className="text-xl font-bold border-b border-zinc-700 pb-2 mb-4">국문 (Korean)</h3>
-                    <p><strong>최종 수정일: 2026년 5월 1일</strong></p>
-                    <h4>1. 서비스의 목적</h4>
-                    <p>이 약관은 틱톡(TikTok) API를 기반으로 이미지/영상 업로드 및 포스팅 예약 자동화를 제공하는 'gabjagi'(이하 "본 서비스")의 이용 조건 및 절차를 규정하는 것을 목적으로 합니다.</p>
-                    <h4>2. 이용자의 의무</h4>
-                    <p>이용자는 관련 법령과 이 약관을 준수해야 합니다. 계정 인증 및 비밀번호 관리에 대한 책임은 전적으로 이용자에게 있습니다.</p>
-                    <h4>3. 틱톡 API 가이드라인 준수</h4>
-                    <p>이용자는 본 서비스를 사용함에 있어 틱톡 커뮤니티 가이드라인 및 개발자 정책을 엄격히 준수해야 함에 동의합니다.</p>
-                    <h4>4. 콘텐츠에 대한 책임</h4>
-                    <p>본 서비스는 예약 및 자동 전송 도구만을 제공합니다. 자동화된 포스팅의 결과물과 그로 인한 분쟁에 대한 모든 책임은 이용자 본인에게 있습니다.</p>
-                    <h4>5. 책임의 제한 및 면책</h4>
-                    <p>본 서비스는 "있는 그대로" 제공됩니다. 당사는 이용자의 틱톡 계정 제재, 데이터 손실 또는 서비스 이용 중 발생한 결과에 대해 어떠한 법적 책임도 지지 않습니다.</p>
-                  </section>
-                </div>
-              ) : type === 'privacy' ? (
-                <div className="space-y-12">
-                   <section>
-                    <h3 className="text-xl font-bold border-b border-zinc-800 pb-2 mb-4">English version</h3>
-                    <p><strong>Last Updated: May 1, 2026</strong></p>
-                    <h4>1. Information We Collect</h4>
-                    <ul>
-                      <li>TikTok Account Data: OAuth Access Tokens and User IDs (via TikTok Login).</li>
-                      <li>Media Content: Images and videos you upload for scheduling.</li>
-                      <li>Schedule Settings: Time, date, and caption metadata.</li>
-                    </ul>
-                    <h4>2. Use of Data</h4>
-                    <p>We use your data solely for facilitating the automated posting process requested by you. We do not sell or trade your data.</p>
-                    <h4>3. Storage and Deletion</h4>
-                    <p>OAuth tokens are encrypted and stored only for the duration of active sessions. Media files are deleted immediately after successful posting or upon manual deletion by the user.</p>
-                    <h4>4. Third-Party Data Sharing (TikTok)</h4>
-                    <p>Your content is transmitted to TikTok Inc. for the sole purpose of publishing. Please refer to TikTok's Privacy Policy for their handling practices.</p>
-                    <h4>5. User Rights</h4>
-                    <p>Users can request full data deletion by contacting us at <strong>gog031103@gmail.com</strong>. You can also revoke API access through your TikTok account settings.</p>
-                  </section>
-
-                  <section className="bg-zinc-800/30 p-8 rounded-2xl">
-                    <h3 className="text-xl font-bold border-b border-zinc-700 pb-2 mb-4">국문 (Korean)</h3>
-                    <p><strong>최종 수정일: 2026년 5월 1일</strong></p>
-                    <h4>1. 수집하는 개인정보 항목</h4>
-                    <ul>
-                      <li>인증 정보: 틱톡 OAuth 액세스 토큰 및 계정 고유 ID.</li>
-                      <li>콘텐츠 정보: 예약 업로드용 이미지 및 영상 파일.</li>
-                      <li>설정 정보: 예약 시간, 날짜 및 캡션 텍스트.</li>
-                    </ul>
-                    <h4>2. 개인정보의 이용 목적</h4>
-                    <p>수집된 정보는 이용자가 요청한 틱톡 자동 포스팅 기능을 수행하기 위한 목적으로만 사용됩니다.</p>
-                    <h4>3. 정보의 보관 및 파기</h4>
-                    <p>액세스 토큰은 암호화되어 보관되며, 서비스 해지 시 즉시 파기됩니다. 업로드된 미디어 파일은 포스팅 완료 후 즉시 서버에서 삭제됩니다.</p>
-                    <h4>4. 제3자 제공 (TikTok)</h4>
-                    <p>이용자가 예약한 포스팅을 수행하기 위해 틱톡(TikTok Inc.) 측에 데이터를 전송합니다. 이는 서비스 핵심 기능 제공을 위함입니다.</p>
-                    <h4>5. 이용자의 권리</h4>
-                    <p>이용자는 언제든지 <strong>gog031103@gmail.com</strong>을 통해 본인의 데이터 삭제를 요청하거나, 틱톡 설정에서 API 권한을 철회할 수 있습니다.</p>
-                  </section>
-                </div>
-              ) : (
-                <div className="space-y-12">
-                  <section>
-                    <h3 className="text-xl font-bold border-b border-zinc-800 pb-2 mb-4">English version</h3>
-                    <p><strong>Last Updated: May 1, 2026</strong></p>
-                    <h4>1. Introduction</h4>
-                    <p>This Cookie Policy explains how gabjagi uses cookies to provide, secure, and improve our services.</p>
-                    <h4>2. What are Cookies?</h4>
-                    <p>Cookies are small text files stored on your browser when you visit our website.</p>
-                    <h4>3. Types of Cookies We Use</h4>
-                    <ul>
-                      <li><strong>Strictly Necessary Cookies:</strong> Required for account authentication (OAuth) and maintaining your login session.</li>
-                      <li><strong>Functionality Cookies:</strong> Used to remember your dashboard preferences and temporary upload states.</li>
-                    </ul>
-                    <h4>4. No Tracking for Advertising</h4>
-                    <p>gabjagi does NOT use cookies for third-party advertising or cross-site tracking. We prioritize your privacy and strictly use functional cookies.</p>
-                  </section>
-
-                  <section className="bg-zinc-800/30 p-8 rounded-2xl">
-                    <h3 className="text-xl font-bold border-b border-zinc-700 pb-2 mb-4">국문 (Korean)</h3>
-                    <p><strong>최종 수정일: 2026년 5월 1일</strong></p>
-                    <h4>1. 개요</h4>
-                    <p>본 쿠키 정책은 gabjagi가 서비스를 제공, 보안 및 개선하기 위해 쿠키를 사용하는 방법을 설명합니다.</p>
-                    <h4>2. 쿠키란 무엇인가요?</h4>
-                    <p>쿠키는 웹사이트 방문 시 브라우저에 저장되는 작은 텍스트 파일입니다.</p>
-                    <h4>3. 사용하는 쿠키의 종류</h4>
-                    <ul>
-                      <li><strong>필수 쿠키:</strong> 계정 인증(OAuth) 및 로그인 세션 유지를 위해 반드시 필요합니다.</li>
-                      <li><strong>기능 쿠키:</strong> 대시보드 설정 및 임시 업로드 상태를 기억하는 데 사용됩니다.</li>
-                    </ul>
-                    <h4>4. 광고 및 추적 금지</h4>
-                    <p>gabjagi는 제3자 광고나 타 사이트 추적을 위한 쿠키를 사용하지 않습니다. 당사는 이용자의 프라이버시를 우선하며 서비스 기능 제공을 위한 쿠키만을 최소한으로 사용합니다.</p>
-                  </section>
-                </div>
-              )}
-            </div>
-          </motion.div>
+    <div className="min-h-screen bg-tiktok-black text-white font-sans p-4 md:p-8 selection:bg-tiktok-pink selection:text-white">
+      <div className="max-w-4xl mx-auto bg-zinc-900 border border-zinc-800 rounded-3xl p-6 md:p-10 shadow-2xl">
+        <div className="flex justify-between items-center border-b border-zinc-800 pb-6 mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold">{getTitle()}</h2>
         </div>
-      )}
-    </AnimatePresence>
+        <div className="prose prose-invert max-w-none prose-zinc prose-headings:text-tiktok-cyan prose-strong:text-tiktok-pink pb-10">
+          {type === 'tos' ? (
+            <div className="space-y-12">
+              <section>
+                <h3 className="text-xl font-bold border-b border-zinc-800 pb-2 mb-4">English version</h3>
+                <p><strong>Last Updated: May 1, 2026</strong></p>
+                <h4>1. Purpose</h4>
+                <p>These Terms of Service ("Terms") govern your access to and use of gabjagi ("the Service"), a TikTok automation tool that provides image/video scheduling and posting via the TikTok API.</p>
+                <h4>2. User Obligations</h4>
+                <p>Users must comply with all applicable local and international laws. You are responsible for maintaining the confidentiality of your account credentials.</p>
+                <h4>3. TikTok API Compliance</h4>
+                <p>By using gabjagi, you agree to strictly follow the TikTok Community Guidelines and TikTok Developer Policies. Any violation of TikTok's terms for content or behavior is the sole responsibility of the user.</p>
+                <h4>4. Automated Content Responsibility</h4>
+                <p>gabjagi is a tool for scheduling. The user holds 100% ownership and liability for any content published through the service. gabjagi does not endorse or review individual posts.</p>
+                <h4>5. Limitation of Liability</h4>
+                <p>gabjagi is provided "as is". We are not responsible for any account suspensions, shadows bans, or data loss resulting from the use of automated tools on TikTok's platform.</p>
+              </section>
+
+              <section className="bg-zinc-800/30 p-8 rounded-2xl">
+                <h3 className="text-xl font-bold border-b border-zinc-700 pb-2 mb-4">국문 (Korean)</h3>
+                <p><strong>최종 수정일: 2026년 5월 1일</strong></p>
+                <h4>1. 서비스의 목적</h4>
+                <p>이 약관은 틱톡(TikTok) API를 기반으로 이미지/영상 업로드 및 포스팅 예약 자동화를 제공하는 'gabjagi'(이하 "본 서비스")의 이용 조건 및 절차를 규정하는 것을 목적으로 합니다.</p>
+                <h4>2. 이용자의 의무</h4>
+                <p>이용자는 관련 법령과 이 약관을 준수해야 합니다. 계정 인증 및 비밀번호 관리에 대한 책임은 전적으로 이용자에게 있습니다.</p>
+                <h4>3. 틱톡 API 가이드라인 준수</h4>
+                <p>이용자는 본 서비스를 사용함에 있어 틱톡 커뮤니티 가이드라인 및 개발자 정책을 엄격히 준수해야 함에 동의합니다.</p>
+                <h4>4. 콘텐츠에 대한 책임</h4>
+                <p>본 서비스는 예약 및 자동 전송 도구만을 제공합니다. 자동화된 포스팅의 결과물과 그로 인한 분쟁에 대한 모든 책임은 이용자 본인에게 있습니다.</p>
+                <h4>5. 책임의 제한 및 면책</h4>
+                <p>본 서비스는 "있는 그대로" 제공됩니다. 당사는 이용자의 틱톡 계정 제재, 데이터 손실 또는 서비스 이용 중 발생한 결과에 대해 어떠한 법적 책임도 지지 않습니다.</p>
+              </section>
+            </div>
+          ) : type === 'privacy' ? (
+            <div className="space-y-12">
+               <section>
+                <h3 className="text-xl font-bold border-b border-zinc-800 pb-2 mb-4">English version</h3>
+                <p><strong>Last Updated: May 1, 2026</strong></p>
+                <h4>1. Information We Collect</h4>
+                <ul>
+                  <li>TikTok Account Data: OAuth Access Tokens and User IDs (via TikTok Login).</li>
+                  <li>Media Content: Images and videos you upload for scheduling.</li>
+                  <li>Schedule Settings: Time, date, and caption metadata.</li>
+                </ul>
+                <h4>2. Use of Data</h4>
+                <p>We use your data solely for facilitating the automated posting process requested by you. We do not sell or trade your data.</p>
+                <h4>3. Storage and Deletion</h4>
+                <p>OAuth tokens are encrypted and stored only for the duration of active sessions. Media files are deleted immediately after successful posting or upon manual deletion by the user.</p>
+                <h4>4. Third-Party Data Sharing (TikTok)</h4>
+                <p>Your content is transmitted to TikTok Inc. for the sole purpose of publishing. Please refer to TikTok's Privacy Policy for their handling practices.</p>
+                <h4>5. User Rights</h4>
+                <p>Users can request full data deletion by contacting us at <strong>gog031103@gmail.com</strong>. You can also revoke API access through your TikTok account settings.</p>
+              </section>
+
+              <section className="bg-zinc-800/30 p-8 rounded-2xl">
+                <h3 className="text-xl font-bold border-b border-zinc-700 pb-2 mb-4">국문 (Korean)</h3>
+                <p><strong>최종 수정일: 2026년 5월 1일</strong></p>
+                <h4>1. 수집하는 개인정보 항목</h4>
+                <ul>
+                  <li>인증 정보: 틱톡 OAuth 액세스 토큰 및 계정 고유 ID.</li>
+                  <li>콘텐츠 정보: 예약 업로드용 이미지 및 영상 파일.</li>
+                  <li>설정 정보: 예약 시간, 날짜 및 캡션 텍스트.</li>
+                </ul>
+                <h4>2. 개인정보의 이용 목적</h4>
+                <p>수집된 정보는 이용자가 요청한 틱톡 자동 포스팅 기능을 수행하기 위한 목적으로만 사용됩니다.</p>
+                <h4>3. 정보의 보관 및 파기</h4>
+                <p>액세스 토큰은 암호화되어 보관되며, 서비스 해지 시 즉시 파기됩니다. 업로드된 미디어 파일은 포스팅 완료 후 즉시 서버에서 삭제됩니다.</p>
+                <h4>4. 제3자 제공 (TikTok)</h4>
+                <p>이용자가 예약한 포스팅을 수행하기 위해 틱톡(TikTok Inc.) 측에 데이터를 전송합니다. 이는 서비스 핵심 기능 제공을 위함입니다.</p>
+                <h4>5. 이용자의 권리</h4>
+                <p>이용자는 언제든지 <strong>gog031103@gmail.com</strong>을 통해 본인의 데이터 삭제를 요청하거나, 틱톡 설정에서 API 권한을 철회할 수 있습니다.</p>
+              </section>
+            </div>
+          ) : (
+            <div className="space-y-12">
+              <section>
+                <h3 className="text-xl font-bold border-b border-zinc-800 pb-2 mb-4">English version</h3>
+                <p><strong>Last Updated: May 1, 2026</strong></p>
+                <h4>1. Introduction</h4>
+                <p>This Cookie Policy explains how gabjagi uses cookies to provide, secure, and improve our services.</p>
+                <h4>2. What are Cookies?</h4>
+                <p>Cookies are small text files stored on your browser when you visit our website.</p>
+                <h4>3. Types of Cookies We Use</h4>
+                <ul>
+                  <li><strong>Strictly Necessary Cookies:</strong> Required for account authentication (OAuth) and maintaining your login session.</li>
+                  <li><strong>Functionality Cookies:</strong> Used to remember your dashboard preferences and temporary upload states.</li>
+                </ul>
+                <h4>4. No Tracking for Advertising</h4>
+                <p>gabjagi does NOT use cookies for third-party advertising or cross-site tracking. We prioritize your privacy and strictly use functional cookies.</p>
+              </section>
+
+              <section className="bg-zinc-800/30 p-8 rounded-2xl">
+                <h3 className="text-xl font-bold border-b border-zinc-700 pb-2 mb-4">국문 (Korean)</h3>
+                <p><strong>최종 수정일: 2026년 5월 1일</strong></p>
+                <h4>1. 개요</h4>
+                <p>본 쿠키 정책은 gabjagi가 서비스를 제공, 보안 및 개선하기 위해 쿠키를 사용하는 방법을 설명합니다.</p>
+                <h4>2. 쿠키란 무엇인가요?</h4>
+                <p>쿠키는 웹사이트 방문 시 브라우저에 저장되는 작은 텍스트 파일입니다.</p>
+                <h4>3. 사용하는 쿠키의 종류</h4>
+                <ul>
+                  <li><strong>필수 쿠키:</strong> 계정 인증(OAuth) 및 로그인 세션 유지를 위해 반드시 필요합니다.</li>
+                  <li><strong>기능 쿠키:</strong> 대시보드 설정 및 임시 업로드 상태를 기억하는 데 사용됩니다.</li>
+                </ul>
+                <h4>4. 광고 및 추적 금지</h4>
+                <p>gabjagi는 제3자 광고나 타 사이트 추적을 위한 쿠키를 사용하지 않습니다. 당사는 이용자의 프라이버시를 우선하며 서비스 기능 제공을 위한 쿠키만을 최소한으로 사용합니다.</p>
+              </section>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
 // --- Landing Page Component ---
-function LandingPage({ onLogin, onOpenLegal }: any) {
+function LandingPage({ onLogin }: any) {
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -371,9 +358,9 @@ function LandingPage({ onLogin, onOpenLegal }: any) {
           <div>
             <h4 className="font-bold mb-6 text-zinc-300 uppercase tracking-widest text-xs">Legal</h4>
             <ul className="space-y-4 text-zinc-500">
-              <li><button onClick={() => onOpenLegal('tos')} className="hover:text-white transition-colors">Terms of Service</button></li>
-              <li><button onClick={() => onOpenLegal('privacy')} className="hover:text-white transition-colors">Privacy Policy</button></li>
-              <li><button onClick={() => onOpenLegal('cookie')} className="hover:text-white transition-colors">Cookie Policy</button></li>
+              <li><Link to="/legal/tos" target="_blank" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link to="/legal/privacy" target="_blank" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/legal/cookie" target="_blank" className="hover:text-white transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
           <div>

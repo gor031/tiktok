@@ -18,9 +18,11 @@ import {
   ChevronRight,
   ShieldCheck,
   Zap,
-  Globe
+  Globe,
+  Clapperboard
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import ShortsMaker from './ShortsMaker';
 
 // Types for scheduled posts
 interface ScheduledPost {
@@ -106,6 +108,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<AppContent />} />
         <Route path="/legal/:type" element={<LegalPage />} />
+        <Route path="/studio" element={<ShortsMaker />} />
       </Routes>
     </BrowserRouter>
   );
@@ -413,6 +416,7 @@ function Dashboard({
         <nav className="flex flex-col gap-2 flex-grow">
           <SidebarItem icon={<LayoutDashboard />} label="Dashboard" active />
           <SidebarItem icon={<Calendar />} label="Schedule" />
+          <Link to="/studio"><SidebarItem icon={<Clapperboard />} label="Shorts Maker" /></Link>
           <SidebarItem icon={<ImageIcon />} label="Assets" />
           <SidebarItem icon={<User />} label="Account" />
         </nav>

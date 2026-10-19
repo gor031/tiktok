@@ -9,3 +9,10 @@
   --color-tiktok-cyan: #25F4EE;
   --color-tiktok-black: #010101;
 }
+
+.game-title {
+  font-family: "Black Han Sans", sans-serif;
+  -webkit-text-stroke: 8px #000;
+  paint-order: stroke fill;
+  text-shadow: 0 5px 0 #000;
+}

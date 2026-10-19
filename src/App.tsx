@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import ShortsMaker from './ShortsMaker';
+import TowerDefense from './game/TowerDefense';
 
 // Types for scheduled posts
 interface ScheduledPost {
@@ -109,6 +110,7 @@ export default function App() {
         <Route path="/" element={<AppContent />} />
         <Route path="/legal/:type" element={<LegalPage />} />
         <Route path="/studio" element={<ShortsMaker />} />
+        <Route path="/game" element={<TowerDefense />} />
       </Routes>
     </BrowserRouter>
   );
@@ -320,6 +322,12 @@ function LandingPage({ onLogin }: any) {
           <button className="px-10 py-5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full font-bold text-xl transition-all">
             See Dashboard
           </button>
+          <Link
+            to="/game"
+            className="px-10 py-5 bg-[#ffe53b] hover:bg-[#fff176] text-tiktok-black rounded-full font-bold text-xl transition-all"
+          >
+            타워 디펜스 플레이
+          </Link>
         </motion.div>
       </div>
 

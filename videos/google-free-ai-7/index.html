@@ -90,7 +90,7 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 .free { right: 36px; top: 1284px; height: 78px; padding: 0 30px; border-radius: 39px; display: flex; align-items: center; gap: 12px; z-index: 6;
   font-weight: 900; font-size: 36px; color: var(--ink); background: var(--paper); white-space: nowrap; letter-spacing: -.6px;
   box-shadow: 0 14px 30px rgba(0,0,0,.45); transform-origin: 100% 50%; }
-.note { left: 60px; right: 60px; top: 1650px; font-weight: 700; font-size: 28px; line-height: 1.4; color: #FFD666; letter-spacing: -.4px; }
+.note { left: 60px; right: 60px; top: 1478px; font-weight: 700; font-size: 28px; line-height: 1.4; color: #FFD666; letter-spacing: -.4px; }
 .badge { left: 60px; right: 60px; height: 0; }
 
 /* ---------- recap ---------- */
@@ -100,7 +100,7 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 #recap .row .k { font-weight: 800; font-size: 44px; letter-spacing: -1px; width: 268px; flex: none; white-space: nowrap; }
 #recap .row .arrow { color: var(--dim); font-size: 40px; font-weight: 700; }
 #recap .row .t { font-family: var(--display); font-size: 54px; letter-spacing: -1px; white-space: nowrap; }
-#recap .foot { left: 0; right: 0; top: 1500px; text-align: center; font-weight: 900; font-size: 54px; letter-spacing: -1.2px; }
+#recap .foot { left: 0; right: 0; top: 1462px; text-align: center; font-weight: 900; font-size: 54px; letter-spacing: -1.2px; }
 #recap .foot b { color: var(--green); }
 
 /* ---------- outro ---------- */
@@ -110,6 +110,12 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 #outro .small { left: 80px; right: 80px; top: 1080px; text-align: center; font-weight: 700; font-size: 34px; line-height: 1.55; color: var(--dim); letter-spacing: -.5px; }
 #outro .gbar { left: 340px; width: 400px; top: 1010px; height: 12px; display: flex; border-radius: 6px; overflow: hidden; }
 #outro .gbar div { flex: 1; }
+
+/* subtitles */
+#subs { position: absolute; left: 50px; right: 50px; top: 1560px; height: 170px; display: flex; align-items: center; justify-content: center; z-index: 40; pointer-events: none; }
+#subs .card { max-width: 980px; padding: 14px 30px 18px; border-radius: 22px; background: rgba(6,8,14,.72); text-align: center;
+  font-family: var(--body); font-weight: 900; font-size: 54px; line-height: 1.28; letter-spacing: -1.4px; color: #fff; word-break: keep-all;
+  text-shadow: 0 3px 0 rgba(0,0,0,.55); box-shadow: 0 10px 30px rgba(0,0,0,.35); }
 
 /* transition wipe */
 #wipe { position: absolute; inset: 0; z-index: 50; pointer-events: none; }
@@ -123,7 +129,7 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 
   <div class="scene" id="intro">
     <div class="abs wait"></div>
-    <div class="abs sub">AI 구독료 <b>결제하기 전에</b> 꼭 보세요</div>
+    <div class="abs sub">AI 구독료 <b>결제하기 전에</b> 이것부터!</div>
     <div class="abs big"><div class="g"></div></div>
     <div class="abs seven">7<small>가지</small></div>
   </div>
@@ -142,6 +148,7 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
     <div class="abs small">무료 범위·한도는 구글 정책에 따라 바뀔 수 있어요.<br>결제 전에 각 도구의 공식 안내를 확인하세요.</div>
   </div>
 
+  <div id="subs"><div class="card"></div></div>
   <div id="wipe"><div></div><div></div><div></div><div></div></div>
 </div>
 
@@ -150,11 +157,12 @@ html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--
 // Timeline (seconds). Shared with audio.py through window.CUES → cues.json.
 // ---------------------------------------------------------------------------
 const FPS = 30;
-const INTRO = 3.5, TOOL = 6.5, RECAP = 6.0, OUTRO = 3.5;
-const T_TOOLS = INTRO;
-const T_RECAP = T_TOOLS + 7 * TOOL;      // 49.0
-const T_OUTRO = T_RECAP + RECAP;         // 55.0
-const DURATION = T_OUTRO + OUTRO;        // 58.5
+// Scene lengths, subtitle cards and beat marks come from timeline.json (written by tts.py from the real voice clips).
+const TL = (() => { const x = new XMLHttpRequest(); x.open('GET', 'timeline.json', false); x.send(); return JSON.parse(x.responseText); })();
+const SC = Object.fromEntries(TL.scenes.map((sc) => [sc.id, sc]));
+const T_TOOLS = SC.stitch.start, T_RECAP = SC.recap.start, T_OUTRO = SC.outro.start;
+const DURATION = TL.duration;
+const SUBS = TL.scenes.flatMap((sc) => sc.lines.filter((l) => !l.nosub).flatMap((l) => l.subs));
 window.DEMO = { width: 1080, height: 1920, fps: FPS, duration: DURATION };
 
 const C = { blue: '#4285F4', red: '#EA4335', yellow: '#FBBC05', green: '#34A853' };
@@ -208,7 +216,18 @@ const TOOLS = [
     cur: [[1.3, 1000, 260], [2.0, 635, 664], [2.3, 635, 664], [3.9, 640, 2440], [5.9, 170, 9720], [6.5, 190, 9730]], clicks: [2.15, 6.05] },
 ];
 
-const TOOL_T = { title: 0.22, url0: 0.55, url1: 1.0, load1: 1.3, head: 1.55, b1: 2.7, b2: 3.6, free: 4.6 };
+const TOOL_T = { title: 0.22, url0: 0.55, url1: 1.0, load1: 1.3, head: 1.55, free: 4.6 };
+const BASE = 6.5;   // camera/cursor keys above were authored for a 6.5 s scene; stretch everything after the page load to the voiced length
+TOOLS.forEach((tl) => {
+  tl.sc = SC[tl.id];
+  const D = tl.sc.dur, k = (D - TOOL_T.load1) / (BASE - TOOL_T.load1);
+  const st = (x) => (x <= TOOL_T.load1 ? x : TOOL_T.load1 + (x - TOOL_T.load1) * k);
+  tl.cam = tl.cam.map(([t, ...r]) => [st(t), ...r]);
+  tl.cur = tl.cur.map(([t, ...r]) => [st(t), ...r]);
+  tl.clicks = tl.clicks.map(st);
+  tl.tFree = tl.sc.marks.free ?? st(TOOL_T.free);
+  tl.tNote = tl.sc.marks.note ?? 3.0;
+});
 
 // ---------------------------------------------------------------------------
 // helpers
@@ -277,15 +296,13 @@ const toolEls = TOOLS.map((tl, i) => {
   const desc = h('div', 'abs desc');
   const head = h('div', 'head', tl.head);
   head.querySelectorAll('em').forEach((e) => { e.style.background = tl.color; e.style.color = tl.color === C.yellow ? '#0A0E18' : '#fff'; e.style.borderRadius = '10px'; });
-  const ul = h('ul');
-  const lis = tl.bullets.map((b) => { const li = h('li', null, `<span class="tick">✓</span><span>${b}</span>`); li.querySelector('.tick').style.background = tl.color; ul.appendChild(li); return li; });
-  desc.append(head, ul);
+  desc.append(head);
   s.append(num, cat, name, kname, free, br, desc);
   let note = null;
   if (tl.note) { note = h('div', 'abs note', tl.note); s.appendChild(note); }
   document.getElementById('tools').appendChild(s);
   return { s, num, cat, name, chars: [...name.children], kname, free, br, urlTxt: url.querySelector('.txt'), caret: url.querySelector('.caret'),
-    load, img, blank, cursor, ripple, head, lis, note };
+    load, img, blank, cursor, ripple, head, note };
 });
 
 // intro
@@ -329,7 +346,7 @@ function show(el, on) { el.style.display = on ? 'block' : 'none'; }
 
 function renderBackground(t) {
   let col = '#4285F4';
-  if (t >= T_TOOLS && t < T_RECAP) col = TOOLS[Math.min(6, Math.floor((t - T_TOOLS) / TOOL))].color;
+  if (t >= T_TOOLS && t < T_RECAP) col = TOOLS.filter((tl) => t >= tl.sc.start).pop().color;
   else if (t >= T_RECAP) col = ['#4285F4', '#34A853'][Math.floor(t / 2) % 2];
   glow.style.background = `radial-gradient(circle, ${col}66 0%, ${col}22 35%, transparent 65%)`;
   set(glow, { transform: `translate(${Math.sin(t * .5) * 60}px, ${Math.cos(t * .37) * 80}px)` });
@@ -339,11 +356,11 @@ function renderBackground(t) {
 function renderProgress(t) {
   const on = t >= T_TOOLS - 0.2 && t < T_RECAP + 0.3;
   prog.style.opacity = on ? clamp(Math.min(seg(t, T_TOOLS - .2, T_TOOLS + .2), 1 - seg(t, T_RECAP, T_RECAP + .3))) : 0;
-  fills.forEach((f, i) => { f.style.width = (clamp((t - T_TOOLS - i * TOOL) / TOOL) * 100) + '%'; });
+  fills.forEach((f, i) => { f.style.width = (seg(t, TOOLS[i].sc.start, TOOLS[i].sc.start + TOOLS[i].sc.dur) * 100) + '%'; });
 }
 
 // wipe: 4 diagonal Google-colour bars sweep across at each cut
-const CUTS = [T_TOOLS, ...TOOLS.map((_, i) => T_TOOLS + (i + 1) * TOOL)];   // includes T_RECAP
+const CUTS = [...TOOLS.map((tl) => tl.sc.start), T_RECAP];
 function renderWipe(t) {
   let best = null;
   for (const c of CUTS) if (Math.abs(t - c) < 0.36) best = c;
@@ -358,33 +375,35 @@ function renderWipe(t) {
 }
 
 function renderIntro(t) {
-  // 잠깐! — on screen from frame 0, shakes, then flies up
-  const out1 = eIn(seg(t, 1.05, 1.35));
+  const M = SC.intro.marks, D = SC.intro.dur;
+  const mSub = M.sub ?? 0.5, mBig = M.big ?? 1.25, m7 = M.seven ?? 1.6;
+  // 잠깐! — on screen from frame 0, shakes, then flies up when the second line starts
+  const out1 = eIn(seg(t, mBig - 0.3, mBig));
   iWait.querySelectorAll('span').forEach((sp, i) => {
     const s = t < 0.02 ? 1.0 : pop(t, -0.08 + i * 0.07, 0.3);
-    const shake = t < 1 ? Math.sin(t * 70 + i) * 5 * (1 - seg(t, .3, .9)) : 0;
+    const shake = Math.sin(t * 70 + i) * 5 * (1 - seg(t, .3, .9));
     set(sp, { transform: `translate(${shake}px, ${-out1 * 500}px) scale(${Math.max(s, 0.001)}) rotate(${(i - 1) * 4 * (1 - seg(t, 0, .5))}deg)`, opacity: 1 - out1 });
   });
-  const sIn = eOut(seg(t, 0.45, 0.75)), sOut = eIn(seg(t, 1.05, 1.3));
+  const sIn = eOut(seg(t, mSub, mSub + 0.3)), sOut = eIn(seg(t, mBig - 0.3, mBig - 0.05));
   set(iSub, { opacity: sIn * (1 - sOut), transform: `translateY(${(1 - sIn) * 60 - sOut * 400}px)` });
 
   // 구글 무료 AI + 7가지
   iBigChars.forEach((sp, i) => {
-    const s = pop(t, 1.25 + i * 0.045, 0.3);
+    const s = pop(t, mBig + i * 0.045, 0.3);
     set(sp, { transform: `translateY(${-310 + (1 - Math.min(s, 1)) * 80}px) scale(${Math.max(s, .001)})`, opacity: s > 0 ? 1 : 0 });
   });
-  const s7 = pop(t, 1.6, 0.34);
-  const exitP = eIn(seg(t, 3.05, 3.5));
+  const s7 = pop(t, m7, 0.34);
+  const exitP = eIn(seg(t, D - 0.45, D));
   set(iSeven, { transform: `translateY(${-140}px) scale(${Math.max(s7, .001) * (1 + exitP * 3)}) rotate(${(1 - Math.min(1, s7)) * -25}deg)`, opacity: (s7 > 0 ? 1 : 0) * (1 - exitP) });
   set(iBig, { opacity: 1 - exitP });
 
-  // seven tiles pop in a 4 + 3 grid under the 7
+  // seven tiles pop in a 4 + 3 grid under the 7 (kept above the subtitle band)
   iTiles.forEach((tile, i) => {
-    const s = pop(t, 1.95 + i * 0.09, 0.3);
+    const s = pop(t, m7 + 0.35 + i * 0.09, 0.3);
     const row = i < 4 ? 0 : 1, col = i < 4 ? i : i - 4;
-    const x = (row === 0 ? 95 : 210) + col * 230, y = 1210 + row * 235;
+    const x = (row === 0 ? 95 : 210) + col * 230, y = 1080 + row * 225;
     const fl = Math.sin(t * 3 + i) * 6;
-    set(tile, { left: x + 'px', top: (y + fl + eIn(exitP) * 900) + 'px', transform: `scale(${Math.max(s, .001)}) rotate(${(i % 2 ? 6 : -6) * (1 - seg(t, 2.4, 3.0))}deg)`, opacity: s > 0 ? 1 - exitP : 0 });
+    set(tile, { left: x + 'px', top: (y + fl + eIn(exitP) * 900) + 'px', transform: `scale(${Math.max(s, .001)}) rotate(${(i % 2 ? 6 : -6) * (1 - seg(t, m7 + 0.8, m7 + 1.4))}deg)`, opacity: s > 0 ? 1 - exitP : 0 });
   });
 }
 
@@ -448,36 +467,36 @@ function renderTool(i, lt) {
   // description
   const ph = eOut(seg(lt, TOOL_T.head, TOOL_T.head + .4));
   set(e.head, { opacity: ph, transform: `translateY(${(1 - ph) * 50}px)` });
-  [TOOL_T.b1, TOOL_T.b2].forEach((bt, k) => {
-    const p = eOut(seg(lt, bt, bt + .35));
-    set(e.lis[k], { opacity: p, transform: `translateX(${(1 - p) * -60}px)` });
-  });
-  const sf = pop(lt, TOOL_T.free, 0.3);
+  const sf = pop(lt, tl.tFree, 0.3);
   set(e.free, { transform: `scale(${Math.max(sf, .001)}) rotate(${Math.sin(lt * 5) * 1.5 * (sf > 0 ? 1 : 0)}deg)`, opacity: sf > 0 ? 1 : 0 });
-  if (e.note) e.note.style.opacity = eOut(seg(lt, 3.0, 3.4));
+  if (e.note) e.note.style.opacity = eOut(seg(lt, tl.tNote, tl.tNote + .4));
 }
 
+function recapFootT() { const L = SC.recap.lines; return L[L.length - 1].end - SC.recap.start + 0.15; }
 function renderRecap(lt) {
+  const M = SC.recap.marks;
   const pt = pop(lt, 0.15, 0.3);
   set(rTitle, { transform: `scale(${Math.max(pt, .001)})`, opacity: pt > 0 ? 1 : 0 });
   rRows.forEach((r, i) => {
-    const p = eOut(seg(lt, 0.55 + i * 0.32, 0.55 + i * 0.32 + 0.4));
+    const t0 = M['row' + i] ?? 0.55 + i * 0.32;
+    const p = eOut(seg(lt, t0 - 0.1, t0 + 0.3));
     set(r, { opacity: p, transform: `translateX(${(1 - p) * 700}px)` });
   });
-  const pf = pop(lt, 3.3, 0.3);
+  const pf = pop(lt, recapFootT(), 0.3);
   set(rFoot, { transform: `scale(${Math.max(pf, .001)}) rotate(${Math.sin(lt * 4) * 1}deg)`, opacity: pf > 0 ? 1 : 0 });
 }
 
 function renderOutro(lt) {
+  const m2 = SC.outro.marks.l2 ?? 0.3;
   const p1 = eOut(seg(lt, 0.0, 0.35));
   set(oL1, { opacity: p1, transform: `translateY(${(1 - p1) * 60}px)` });
   oChars.forEach((sp, i) => {
-    const s = pop(lt, 0.3 + i * 0.07, 0.3);
+    const s = pop(lt, m2 + i * 0.07, 0.3);
     set(sp, { transform: `translateY(${Math.sin(lt * 3 + i) * 6}px) scale(${Math.max(s, .001)})`, opacity: s > 0 ? 1 : 0 });
   });
-  const pb = eOut(seg(lt, 0.8, 1.2));
+  const pb = eOut(seg(lt, m2 + 0.5, m2 + 0.9));
   set(oBar, { transform: `scaleX(${pb})` });
-  const ps = eOut(seg(lt, 1.1, 1.5));
+  const ps = eOut(seg(lt, m2 + 0.8, m2 + 1.2));
   set(oSmall, { opacity: ps, transform: `translateY(${(1 - ps) * 20}px)` });
 }
 
@@ -488,8 +507,8 @@ window.renderAt = async (t) => {
   show(intro, t < T_TOOLS);
   if (t < T_TOOLS) renderIntro(t);
   toolEls.forEach((e, i) => {
-    const t0 = T_TOOLS + i * TOOL;
-    const on = t >= t0 && t < t0 + TOOL;
+    const t0 = TOOLS[i].sc.start;
+    const on = t >= t0 && t < t0 + TOOLS[i].sc.dur;
     show(e.s, on);
     if (on) renderTool(i, t - t0);
   });
@@ -497,29 +516,39 @@ window.renderAt = async (t) => {
   if (t >= T_RECAP && t < T_OUTRO) renderRecap(t - T_RECAP);
   show(outro, t >= T_OUTRO);
   if (t >= T_OUTRO) renderOutro(t - T_OUTRO);
+  renderSubs(t);
 };
+
+const subCard = document.querySelector('#subs .card');
+function renderSubs(t) {
+  const cur = SUBS.find((c) => t >= c.start - 0.04 && t < c.end + 0.12);
+  if (!cur) { subCard.style.opacity = 0; return; }
+  if (subCard.textContent !== cur.text) subCard.textContent = cur.text;
+  const p = eOut(seg(t, cur.start - 0.04, cur.start + 0.1));
+  set(subCard, { opacity: p, transform: `translateY(${(1 - p) * 14}px) scale(${0.96 + 0.04 * p})` });
+}
 
 // cue sheet for audio.py (absolute seconds)
 window.CUES = (() => {
-  const cues = { duration: DURATION, bpm: 120, whoosh: CUTS.slice(), pop: [], click: [], type: [], ding: [], tick: [], hit: [], boom: [], final: [] };
-  cues.hit.push(0.0); cues.pop.push(0.5, 1.25); cues.boom.push(1.6);
-  TOOLS.forEach((_, i) => cues.pop.push(1.95 + i * 0.09));
-  TOOLS.forEach((tl, i) => {
-    const t0 = T_TOOLS + i * TOOL;
+  const I = SC.intro.marks, RM = SC.recap.marks;
+  const cues = { duration: DURATION, bpm: 120, tools_start: T_TOOLS, outro_start: T_OUTRO, beat_in: I.seven ?? 1.6,
+    whoosh: CUTS.slice(), pop: [], click: [], type: [], ding: [], tick: [], hit: [], boom: [], final: [] };
+  cues.hit.push(0.0); cues.pop.push(I.sub ?? 0.5, I.big ?? 1.25); cues.boom.push(I.seven ?? 1.6);
+  TOOLS.forEach((_, i) => cues.pop.push((I.seven ?? 1.6) + 0.35 + i * 0.09));
+  TOOLS.forEach((tl) => {
+    const t0 = tl.sc.start;
     cues.pop.push(t0 + TOOL_T.title);
     const full = tl.host + tl.path;
     for (let k = 0; k < full.length; k += 2) cues.type.push(t0 + TOOL_T.url0 + (TOOL_T.url1 - TOOL_T.url0) * k / full.length);
     tl.clicks.forEach((c) => cues.click.push(t0 + c));
-    cues.tick.push(t0 + TOOL_T.b1, t0 + TOOL_T.b2);
-    cues.ding.push(t0 + TOOL_T.free);
+    cues.ding.push(t0 + tl.tFree);
   });
   cues.pop.push(T_RECAP + 0.15);
-  TOOLS.forEach((_, i) => cues.tick.push(T_RECAP + 0.55 + i * 0.32));
-  cues.ding.push(T_RECAP + 3.3);
-  cues.pop.push(T_OUTRO + 0.3); cues.final.push(T_OUTRO + 0.3);
+  TOOLS.forEach((_, i) => cues.tick.push(T_RECAP + (RM['row' + i] ?? 0.55 + i * 0.32)));
+  cues.ding.push(T_RECAP + recapFootT());
+  cues.pop.push(T_OUTRO + (SC.outro.marks.l2 ?? 0.3)); cues.final.push(T_OUTRO + (SC.outro.marks.l2 ?? 0.3));
   return cues;
 })();
-
 const FONT_LOADS = ['40px BHSL', '40px BHSK', '500 40px Pretendard', '700 40px Pretendard', '800 40px Pretendard', '900 40px Pretendard']
   .map((f) => document.fonts.load(f, 'Aa가힣'));
 Promise.all([...FONT_LOADS, document.fonts.ready, ...toolEls.map((e) => e.img.decode().catch(() => {}))]).then(async () => {

@@ -59,8 +59,8 @@ def mtof(m):
 BPM = cues['bpm']
 BEAT = 60 / BPM
 BAR = 4 * BEAT
-T_TOOLS, T_OUTRO = 3.5, DUR - 3.5
-BEAT_IN = 1.6                       # full groove lands on the big "7"
+T_TOOLS, T_OUTRO = cues.get('tools_start', 3.5), cues.get('outro_start', DUR - 3.5)
+BEAT_IN = cues.get('beat_in', 1.6)  # full groove lands on the big "7"
 END_GROOVE = T_OUTRO + 1.5
 
 # vi – IV – I – V in C (A minor feel, bright pop)
@@ -180,8 +180,25 @@ for tf in cues['final']:
     mput(music, s, tf)
     mput(musL, pluck(72, 1.0) * 1.5, tf); mput(musR, pluck(76, 1.0) * 1.5, tf + 0.07)
 
-L += (music + padbus + musL) * 0.9
-R += (music + padbus + musR) * 0.9
+# narration (from tts.py): music ducks under the voice
+vo_path = os.path.join(ROOT, 'out', 'vo.wav')
+vo = np.zeros(N)
+if os.path.exists(vo_path):
+    with wave.open(vo_path) as w:
+        v = np.frombuffer(w.readframes(w.getnframes()), '<i2').astype(np.float64) / 32768
+    vo[:min(N, len(v))] = v[:N]
+    print('mixing narration out/vo.wav')
+blk = int(0.05 * SR)
+nb = N // blk
+rms = np.sqrt(np.mean(vo[:nb * blk].reshape(nb, blk) ** 2, 1))
+active = (rms > 0.01).astype(float)
+k = np.ones(7) / 7                                          # ±150 ms hold so the duck doesn't pump between words
+active = np.minimum(1, np.convolve(active, k, 'same') * 3)
+duck_vo = np.repeat(1 - 0.62 * active, blk)
+duck_vo = np.convolve(np.pad(duck_vo, (0, N - len(duck_vo)), constant_values=1), np.ones(2400) / 2400, 'same')
+L += (music + padbus + musL) * 0.9 * duck_vo
+R += (music + padbus + musR) * 0.9 * duck_vo
+VOX = vo * 2.4
 
 # ---------------------------------------------------------------- sfx
 
@@ -265,6 +282,8 @@ n_out = int(DUR * SR)
 fade = int(0.6 * SR)
 for ch in (L, R):
     ch[n_out - fade:n_out] *= np.linspace(1, 0, fade)
+L += VOX
+R += VOX
 st = np.stack([L[:n_out], R[:n_out]], 1)
 st = st / (np.max(np.abs(st)) + 1e-9) * 0.89
 os.makedirs(os.path.join(ROOT, 'out'), exist_ok=True)

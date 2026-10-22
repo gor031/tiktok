@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>무료 AI 앱 TOP 5</title>
+<style>
+@font-face { font-family: 'BHSL'; src: url(assets/fonts/black-han-sans-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'BHSK'; src: url(assets/fonts/black-han-sans-korean-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Pretendard'; font-weight: 500; src: url(assets/fonts/Pretendard-Medium.woff2) format('woff2'); }
+@font-face { font-family: 'Pretendard'; font-weight: 700; src: url(assets/fonts/Pretendard-Bold.woff2) format('woff2'); }
+@font-face { font-family: 'Pretendard'; font-weight: 800; src: url(assets/fonts/Pretendard-ExtraBold.woff2) format('woff2'); }
+@font-face { font-family: 'Pretendard'; font-weight: 900; src: url(assets/fonts/Pretendard-Black.woff2) format('woff2'); }
+
+:root {
+  --ink: #0A0820; --paper: #F5F3FF; --dim: #A9A4C8;
+  --display: 'BHSL', 'BHSK', 'Pretendard', sans-serif;
+  --body: 'Pretendard', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+#stage { position: absolute; inset: 0; overflow: hidden; color: var(--paper); font-family: var(--body);
+  background: linear-gradient(180deg, #0B0824 0%, #120A30 55%, #0A0820 100%); }
+.abs { position: absolute; }
+.scene { position: absolute; inset: 0; display: none; }
+
+/* aurora: big soft colour fields drifting on slow sine paths */
+#aurora { position: absolute; inset: 0; opacity: .62; }
+#aurora .blob { position: absolute; width: 1300px; height: 1300px; margin: -650px 0 0 -650px; border-radius: 50%; mix-blend-mode: screen; }
+#grain { position: absolute; inset: 0; opacity: .07; mix-blend-mode: overlay; }
+#vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 42%, transparent 50%, rgba(4,2,14,.6) 100%); }
+
+/* glass recipe: blur + 7 % white + 1 px inner highlight + large radius */
+.glass { background: rgba(255,255,255,.075); border: 1.5px solid rgba(255,255,255,.2);
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.38), 0 24px 60px rgba(4,2,20,.42);
+  backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%); }
+
+/* header + rank row (persistent) */
+#header { left: 50%; top: 84px; height: 72px; padding: 0 34px; border-radius: 36px; display: flex; align-items: center; gap: 14px; white-space: nowrap;
+  font-weight: 800; font-size: 34px; letter-spacing: -.8px; transform-origin: 50% 50%; }
+#header b { font-weight: 900; background: linear-gradient(90deg, #FFE58A, #FF9ED8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#ranks { position: absolute; left: 0; right: 0; top: 0; height: 420px; }
+.slot { position: absolute; top: 236px; width: 150px; height: 150px; border-radius: 40px; }
+.slot .crown { position: absolute; left: 39px; top: -44px; width: 72px; height: 54px; z-index: 2; }
+.slot .q { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--display); font-size: 64px; color: rgba(245,243,255,.28); }
+.slot .tile { position: absolute; left: 19px; top: 19px; }
+.slot .ring { position: absolute; inset: -8px; border-radius: 48px; border: 3px solid; opacity: 0; }
+.slot .ping { position: absolute; inset: 0; border-radius: 40px; border: 4px solid; opacity: 0; }
+
+.tile { width: 112px; height: 112px; border-radius: 30px; display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-size: 58px; line-height: 1; letter-spacing: -1px;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.35), inset 0 -6px 14px rgba(0,0,0,.18), 0 10px 24px rgba(0,0,0,.35); }
+.tile.sm-text { font-size: 40px; }
+
+/* hero reveal */
+#hero { position: absolute; left: 0; top: 0; width: 360px; height: 520px; margin: -260px 0 0 -180px; z-index: 30; display: none; transform-origin: 50% 50%; }
+#hero .rays { position: absolute; left: -300px; top: -160px; width: 960px; height: 960px; border-radius: 50%;
+  -webkit-mask: radial-gradient(circle, #000 18%, transparent 62%); mask: radial-gradient(circle, #000 18%, transparent 62%); }
+#hero .crown { position: absolute; left: 70px; top: 0; width: 220px; height: 165px; }
+#hero .tile { position: absolute; left: 30px; top: 150px; width: 300px; height: 300px; border-radius: 82px; font-size: 156px; }
+#hero .tile.sm-text { font-size: 104px; }
+#hero .rk { position: absolute; left: -100px; right: -100px; top: 474px; text-align: center; font-family: var(--display); font-size: 110px; line-height: 1; }
+.spark { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; }
+
+/* ---------- intro ---------- */
+#intro .l1 { left: 0; right: 0; top: 470px; text-align: center; font-family: var(--display); font-size: 210px; line-height: 1; letter-spacing: -4px; }
+#intro .l1 span, #intro .l2 span { display: inline-block; }
+#intro .strike { left: 120px; top: 570px; width: 840px; height: 26px; border-radius: 13px; background: linear-gradient(90deg, #FF4D6D, #FF8A5C); transform-origin: 0 50%;
+  box-shadow: 0 0 40px rgba(255,77,109,.7); }
+#intro .l2 { left: 0; right: 0; top: 720px; text-align: center; font-family: var(--display); font-size: 150px; line-height: 1; letter-spacing: -3px; color: #FFE58A; }
+#intro .card { left: 260px; top: 1000px; width: 560px; height: 340px; border-radius: 40px; padding: 40px 44px; }
+#intro .card .chip { width: 86px; height: 64px; border-radius: 14px; background: linear-gradient(135deg, #FFE7A3, #C9A24B); opacity: .9; }
+#intro .card .what { margin-top: 44px; font-weight: 800; font-size: 40px; color: rgba(245,243,255,.8); letter-spacing: -.8px; }
+#intro .card .amt { margin-top: 6px; font-family: var(--display); font-size: 74px; letter-spacing: -1px; }
+#intro .stamp { left: 610px; top: 940px; width: 230px; height: 230px; border-radius: 50%; border: 14px solid #FF4D6D; display: flex; align-items: center; justify-content: center;
+  font-family: var(--display); font-size: 150px; color: #FF4D6D; line-height: 1; box-shadow: 0 0 50px rgba(255,77,109,.55), inset 0 0 30px rgba(255,77,109,.35); }
+#intro .t1 { left: 0; right: 0; top: 520px; text-align: center; font-weight: 900; font-size: 76px; letter-spacing: -2px; }
+#intro .t2 { left: 0; right: 0; top: 620px; text-align: center; font-family: var(--display); font-size: 230px; line-height: 1; letter-spacing: -5px; }
+#intro .t3 { left: 0; right: 0; top: 860px; text-align: center; font-family: var(--display); font-size: 330px; line-height: 1; letter-spacing: -6px;
+  background: linear-gradient(100deg, #FFE58A 10%, #FF9ED8 50%, #8FB6FF 90%); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 18px 40px rgba(255,120,200,.35)); }
+
+/* ---------- tool ---------- */
+.tool .badge { left: 60px; top: 438px; width: 150px; height: 160px; border-radius: 40px; }
+.tool .badge .crown { position: absolute; left: 36px; top: 16px; width: 78px; height: 58px; }
+.tool .badge .rk { position: absolute; left: 0; right: 0; top: 80px; text-align: center; font-family: var(--display); font-size: 64px; line-height: 1; }
+.tool .tag { left: 236px; top: 444px; height: 56px; padding: 0 24px; border-radius: 28px; display: flex; align-items: center; gap: 10px;
+  font-weight: 800; font-size: 32px; letter-spacing: -.6px; white-space: nowrap; }
+.tool .tag i { width: 14px; height: 14px; border-radius: 50%; }
+.tool .name { left: 232px; top: 506px; font-family: var(--display); font-size: 104px; line-height: 1; letter-spacing: -2px; white-space: nowrap; }
+.tool .name span { display: inline-block; }
+
+.browser { left: 60px; top: 632px; width: 960px; height: 608px; border-radius: 36px; padding: 14px; }
+.chrome { position: absolute; left: 14px; right: 14px; top: 14px; height: 60px; display: flex; align-items: center; padding: 0 16px; gap: 10px; }
+.chrome .dot { width: 16px; height: 16px; border-radius: 50%; }
+.urlbar { margin-left: 14px; flex: 1; height: 44px; border-radius: 22px; background: rgba(10,8,32,.45); display: flex; align-items: center; padding: 0 20px; gap: 10px;
+  font-weight: 500; font-size: 24px; color: #E9E6FF; white-space: nowrap; overflow: hidden; }
+.urlbar .host { color: #fff; font-weight: 700; }
+.live { height: 36px; padding: 0 14px; border-radius: 18px; display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 20px; color: #fff;
+  background: rgba(255,255,255,.12); white-space: nowrap; }
+.live .led { width: 11px; height: 11px; border-radius: 50%; background: #FF5577; }
+.loadbar { position: absolute; left: 14px; top: 74px; height: 4px; width: 0; z-index: 3; border-radius: 2px; }
+.viewport { position: absolute; left: 14px; top: 74px; width: 932px; height: 520px; overflow: hidden; background: #fff; border-radius: 0 0 24px 24px; }
+.viewport img, .viewport .pl { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.viewport .pl div { position: absolute; }
+.viewport .typed { white-space: nowrap; font-family: var(--body); font-weight: 500; }
+.viewport .typed .caret { display: inline-block; width: 2px; height: 1.1em; margin-left: 2px; vertical-align: -0.15em; background: #222; }
+.viewport .blank { position: absolute; inset: 0; background: #F4F3F8; }
+.cursor { position: absolute; left: 0; top: 0; width: 40px; height: 50px; z-index: 5; filter: drop-shadow(0 4px 6px rgba(0,0,0,.35)); }
+.ripple { position: absolute; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%; border: 5px solid; z-index: 4; opacity: 0; }
+
+.free { right: 34px; top: 1170px; height: 76px; padding: 0 28px 0 12px; border-radius: 38px; display: flex; align-items: center; gap: 14px; z-index: 6;
+  font-weight: 900; font-size: 34px; color: #0E2418; letter-spacing: -.6px; white-space: nowrap;
+  background: linear-gradient(120deg, #E6FF9A, #8EF0B8 55%, #7FE0FF); box-shadow: 0 16px 40px rgba(60,230,170,.35), inset 0 2px 0 rgba(255,255,255,.7);
+  transform-origin: 100% 50%; }
+.free .lbl { height: 52px; padding: 0 16px; border-radius: 26px; background: #0E2418; color: #B8FFD6; font-family: var(--display); font-size: 28px; display: flex; align-items: center; letter-spacing: 1px; }
+.chips { left: 60px; right: 60px; top: 1272px; display: flex; gap: 16px; justify-content: center; }
+.chips .c { height: 78px; padding: 0 28px; border-radius: 39px; display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 35px; letter-spacing: -.8px; white-space: nowrap; }
+.chips .c i { font-style: normal; font-weight: 900; }
+
+/* ---------- recap ---------- */
+#recap .title { left: 0; right: 0; top: 214px; text-align: center; font-family: var(--display); font-size: 110px; letter-spacing: -2px; line-height: 1.1; }
+#recap .title b { font-weight: 400; background: linear-gradient(100deg, #FFE58A, #FF9ED8 55%, #8FB6FF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#recap .row { left: 70px; right: 70px; height: 150px; border-radius: 40px; display: flex; align-items: center; padding: 0 30px; gap: 22px; }
+#recap .row .crown { width: 74px; height: 56px; flex: none; }
+#recap .row .tile { width: 96px; height: 96px; border-radius: 26px; font-size: 48px; flex: none; }
+#recap .row .tile.sm-text { font-size: 33px; }
+#recap .row .nm { font-family: var(--display); font-size: 62px; letter-spacing: -1px; white-space: nowrap; }
+#recap .row .tg { margin-left: auto; font-weight: 800; font-size: 32px; color: var(--dim); white-space: nowrap; letter-spacing: -.6px; }
+#recap .row.first { box-shadow: inset 0 1.5px 0 rgba(255,255,255,.45), 0 0 0 3px rgba(255,214,90,.55), 0 24px 70px rgba(255,190,60,.25); }
+#recap .foot { left: 0; right: 0; top: 1268px; text-align: center; font-weight: 900; font-size: 54px; letter-spacing: -1.4px; }
+#recap .foot b { color: #9CF5C4; }
+
+/* ---------- outro ---------- */
+#outro .l1 { left: 0; right: 0; top: 560px; text-align: center; font-weight: 900; font-size: 90px; letter-spacing: -2.5px; }
+#outro .l2 { left: 0; right: 0; top: 680px; text-align: center; font-family: var(--display); font-size: 250px; line-height: 1; letter-spacing: -6px; }
+#outro .l2 span { display: inline-block; background: linear-gradient(180deg, #FFF7C2, #FFD45A 45%, #FF9ED8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#outro .tiles { left: 0; right: 0; top: 1010px; display: flex; justify-content: center; gap: 26px; }
+#outro .small { left: 80px; right: 80px; top: 1196px; text-align: center; font-weight: 700; font-size: 32px; line-height: 1.55; color: var(--dim); letter-spacing: -.5px; }
+
+/* subtitles */
+#subs { position: absolute; left: 40px; right: 40px; top: 1404px; height: 180px; display: flex; align-items: center; justify-content: center; z-index: 40; pointer-events: none; }
+#subs .line { max-width: 1000px; text-align: center; font-weight: 900; font-size: 64px; line-height: 1.25; letter-spacing: -1.8px; color: #fff; word-break: keep-all;
+  text-shadow: 0 0 2px #0A0820, 3px 3px 0 #0A0820, -3px 3px 0 #0A0820, 3px -3px 0 #0A0820, -3px -3px 0 #0A0820, 0 4px 0 #0A0820, 0 -4px 0 #0A0820, 4px 0 0 #0A0820, -4px 0 0 #0A0820,
+    0 10px 30px rgba(10,8,32,.8); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="aurora"></div>
+  <canvas id="grain" width="540" height="960"></canvas>
+  <div id="vignette"></div>
+
+  <div class="abs glass" id="header">유료 결제하면 손해인 <b>무료 AI 앱 TOP 5</b></div>
+  <div id="ranks"></div>
+
+  <div class="scene" id="intro">
+    <div class="abs l1"></div>
+    <div class="abs strike"></div>
+    <div class="abs l2"></div>
+    <div class="abs glass card"><div class="chip"></div><div class="what">AI 구독료</div><div class="amt">매달 $20</div></div>
+    <div class="abs stamp">✕</div>
+    <div class="abs t1">무료로도 충분한</div>
+    <div class="abs t2">AI 앱</div>
+    <div class="abs t3">TOP 5</div>
+  </div>
+
+  <div id="tools"></div>
+
+  <div class="scene" id="recap">
+    <div class="abs title">무료 AI 앱 <b>TOP 5</b></div>
+    <div class="abs foot">다섯 개 모두 <b>무료</b>로 시작할 수 있어요</div>
+  </div>
+
+  <div class="scene" id="outro">
+    <div class="abs l1">결제하기 전에</div>
+    <div class="abs l2"></div>
+    <div class="abs tiles"></div>
+    <div class="abs small">무료 범위·한도는 각 서비스 정책에 따라 바뀔 수 있어요.<br>2026년 10월 기준</div>
+  </div>
+
+  <div id="hero"><div class="rays"></div><div class="crown"></div><div class="tile"></div><div class="rk"></div></div>
+  <div id="subs"><div class="line"></div></div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Timeline (seconds). Shared with audio.py through window.CUES → cues.json.
+// ---------------------------------------------------------------------------
+const FPS = 30;
+// Scene lengths, subtitle cards and beat marks come from timeline.json (written by tts.py from the real voice clips).
+const TL = (() => { const x = new XMLHttpRequest(); x.open('GET', 'timeline.json', false); x.send(); return JSON.parse(x.responseText); })();
+const SC = Object.fromEntries(TL.scenes.map((sc) => [sc.id, sc]));
+const DURATION = TL.duration;
+const SUBS = TL.scenes.flatMap((sc) => sc.lines.filter((l) => !l.nosub).flatMap((l) => l.subs));
+window.DEMO = { width: 1080, height: 1920, fps: FPS, duration: DURATION };
+
+// rank → crown gradient (top, bottom) and text gradient
+const RANK = {
+  1: ['#FFF1A8', '#F2B200'], 2: ['#F4F6FA', '#9EAABD'], 3: ['#FFD3AA', '#C46F33'], 4: ['#C9D7FF', '#5476FF'], 5: ['#E8DCFF', '#9461FF'],
+};
+
+// Camera keys: [t, cx, cy, zoom] (page pixels at the viewport centre); cursor keys: [t, x, y] in page pixels.
+// Key times are authored on a 0–5 s page clock and stretched to each scene's voiced length.
+// Page captures: Firecrawl screenshots of each official site, 2026-10-22.
+const TOOLS = [
+  { id: 'chatgpt', rank: 5, name: 'ChatGPT', tag: '만능 AI 비서', mono: 'GPT', small: true, tileBg: 'linear-gradient(150deg,#3A3A3A,#0E0E0E)', tileFg: '#FFFFFF',
+    accent: '#5EEAD4', host: 'chatgpt.com', img: 'chatgpt', W: 1280, H: 1100,
+    chips: ['웹 검색', '파일 업로드', '이미지 생성'], free: '무료 플랜으로 OK',
+    cam: [[0, 640, 420, 1], [0.7, 640, 420, 1], [1.5, 760, 560, 1.7], [4.2, 760, 560, 1.7], [5, 770, 560, 1.74]],
+    cur: [[0.3, 1000, 250], [1.3, 520, 560], [1.6, 520, 560], [3.6, 1126, 560], [3.9, 1126, 560], [5, 1090, 610]], clicks: [1.45, 3.8],
+    patches: [{ x: 440, y: 544, w: 130, h: 32, bg: '#FFFFFF', t: 1.55 }],
+    typed: { x: 443, y: 559, size: 19, color: '#111', text: '이번 주 회의 내용 정리해 줘', t0: 1.7, t1: 3.3 } },
+  { id: 'perplexity', rank: 4, name: 'Perplexity', tag: 'AI 검색 엔진', mono: 'P', tileBg: 'linear-gradient(150deg,#1C5560,#0B2A30)', tileFg: '#7FE7F2',
+    accent: '#22B8CF', host: 'perplexity.ai', img: 'perplexity', W: 1280, H: 1100,
+    chips: ['출처 표시', '보고서식 정리'], free: '기본 검색 무료',
+    cam: [[0, 640, 550, 1], [0.5, 640, 550, 1], [1.2, 920, 900, 1.45], [1.9, 920, 900, 1.45], [2.6, 760, 500, 1.6], [5, 760, 505, 1.65]],
+    cur: [[0.3, 600, 300], [1.25, 1012, 1060], [1.65, 1012, 1060], [2.6, 470, 470], [3.0, 470, 470], [4.4, 1045, 529], [5, 1010, 570]], clicks: [1.55, 2.85, 4.5],
+    patches: [{ x: 818, y: 842, w: 462, h: 258, bg: '#FBFBFB', t: 1.62 }, { x: 452, y: 455, w: 130, h: 30, bg: '#FFFFFF', t: 2.9 }],
+    typed: { x: 456, y: 469, size: 18, color: '#20202A', text: '요즘 뜨는 AI 트렌드 정리해 줘', t0: 3.0, t1: 4.2 } },
+  { id: 'claude', rank: 3, name: 'Claude', tag: '긴 문서 분석', mono: 'C', tileBg: 'linear-gradient(150deg,#E9906F,#C2603F)', tileFg: '#FFF5EE',
+    accent: '#FF8A65', host: 'claude.com', img: 'claude', W: 1280, H: 12082,
+    chips: ['긴 문서', 'PDF 분석', '핵심 요약'], free: '무료 플랜 있음',
+    cam: [[0, 640, 520, 1], [0.8, 640, 520, 1], [1.6, 560, 640, 1.55], [2.3, 560, 640, 1.55], [3.4, 800, 2330, 1], [4.2, 1000, 2390, 1.5], [5, 1000, 2400, 1.55]],
+    cur: [[0.3, 1000, 300], [1.5, 552, 684], [1.9, 552, 684], [3.6, 1000, 2350], [4.4, 1060, 2360], [5, 1090, 2390]], clicks: [1.95] },
+  { id: 'grammarly', rank: 2, name: 'Grammarly', tag: '영어 교정', mono: 'G', tileBg: 'linear-gradient(150deg,#2EDCAE,#0E9B78)', tileFg: '#FFFFFF',
+    accent: '#22C997', host: 'grammarly.com', img: 'grammarly', W: 1280, H: 8447,
+    chips: ['맞춤법', '문법', '톤 체크'], free: 'AI 프롬프트 월 100회',
+    cam: [[0, 640, 420, 1], [0.8, 640, 420, 1], [1.7, 1010, 700, 1.7], [2.8, 1010, 700, 1.72], [3.8, 900, 1720, 1.5], [5, 900, 1720, 1.55]],
+    cur: [[0.3, 640, 300], [1.5, 1080, 800], [2.1, 910, 732], [2.4, 910, 732], [3.9, 760, 1690], [5, 1000, 1720]], clicks: [2.3] },
+  { id: 'clovanote', rank: 1, name: 'CLOVA Note', tag: '회의록 자동화', mono: 'CN', small: true, tileBg: 'linear-gradient(150deg,#27D97C,#1C7CFF)', tileFg: '#FFFFFF',
+    accent: '#4C8DFF', host: 'clovanote.naver.com', img: 'clovanote', W: 1280, H: 9005,
+    chips: ['화자 구분', 'AI 요약', '한국어'], free: '월 300분 무료',
+    cam: [[0, 640, 380, 1], [0.9, 640, 380, 1], [1.9, 900, 1150, 1.3], [3.2, 900, 1150, 1.34], [4.2, 240, 960, 1.4], [5, 240, 960, 1.44]],
+    cur: [[0.3, 1000, 250], [1.6, 1020, 600], [2.3, 820, 1120], [3.2, 820, 1120], [4.1, 250, 1000], [5, 300, 1100]], clicks: [2.4] },
+];
+
+const HERO_IN = -0.12, HERO_HOLD = 1.05, HERO_FLY = 0.45;   // relative to the "reveal" mark
+TOOLS.forEach((tl) => {
+  tl.sc = SC[tl.id];
+  const D = tl.sc.dur;
+  tl.R = tl.sc.marks.reveal ?? 0.45;
+  tl.land = tl.R + HERO_HOLD + HERO_FLY;
+  tl.C0 = tl.R + HERO_HOLD + 0.1;          // content starts building while the hero flies home
+  tl.P0 = tl.C0 + 0.75;                    // page loaded; page clock starts
+  const k = (D - 0.45 - tl.P0) / 5;
+  const st = (x) => tl.P0 + x * k;
+  tl.cam = tl.cam.map(([t, ...r]) => [st(t), ...r]);
+  tl.cur = tl.cur.map(([t, ...r]) => [st(t), ...r]);
+  tl.clicks = tl.clicks.map(st);
+  (tl.patches || []).forEach((p) => { p.t = st(p.t); });
+  if (tl.typed) { tl.typed.t0 = st(tl.typed.t0); tl.typed.t1 = st(tl.typed.t1); }
+  tl.tFree = tl.sc.marks.free ?? D - 2.2;
+});
+const T_FIRST = SC.chatgpt.start, T_RECAP = SC.recap.start, T_OUTRO = SC.outro.start;
+
+// ---------------------------------------------------------------------------
+// helpers
+// ---------------------------------------------------------------------------
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const lerp = (a, b, p) => a + (b - a) * p;
+const seg = (t, a, b) => clamp((t - a) / (b - a));
+const eOut = (p) => 1 - Math.pow(1 - p, 3);
+const eIn = (p) => p * p * p;
+const eInOut = (p) => (p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2);
+const eQuint = (p) => (p < .5 ? 16 * p ** 5 : 1 - Math.pow(-2 * p + 2, 5) / 2);
+const eSine = (p) => -(Math.cos(Math.PI * p) - 1) / 2;
+function pop(t, t0, d = 0.3, over = 1.14) {      // 0 → over → 1
+  const p = clamp((t - t0) / d);
+  if (p <= 0) return 0;
+  if (p < .55) return over * eOut(p / .55);
+  return lerp(over, 1, eInOut((p - .55) / .45));
+}
+const hash = (i) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const set = (el, s) => Object.assign(el.style, s);
+const hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+const mix = (a, b, p) => { const A = hex(a), B = hex(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], p))).join(',')})`; };
+
+function keyed(keys, t, n) {
+  if (t <= keys[0][0]) return keys[0].slice(1, n + 1);
+  for (let i = 0; i < keys.length - 1; i++) {
+    const a = keys[i], b = keys[i + 1];
+    if (t <= b[0]) {
+      const p = eQuint(seg(t, a[0], b[0]));
+      const out = []; for (let k = 1; k <= n; k++) out.push(lerp(a[k], b[k], p));
+      return out;
+    }
+  }
+  return keys[keys.length - 1].slice(1, n + 1);
+}
+
+let crownN = 0;
+function crown(rank) {
+  const [a, b] = RANK[rank], id = 'cg' + (crownN++);
+  return `<svg viewBox="0 0 100 76" width="100%" height="100%"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs>
+    <path d="M10 24 L30 44 L50 10 L70 44 L90 24 L83 66 L17 66 Z" fill="url(#${id})" stroke="rgba(255,255,255,.75)" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="10" cy="22" r="6.5" fill="url(#${id})"/><circle cx="50" cy="8" r="6.5" fill="url(#${id})"/><circle cx="90" cy="22" r="6.5" fill="url(#${id})"/>
+    <rect x="17" y="63" width="66" height="10" rx="3" fill="${b}"/>
+    <text x="50" y="59" text-anchor="middle" font-family="Pretendard" font-weight="900" font-size="25" fill="rgba(20,12,40,.82)">${rank}</text></svg>`;
+}
+const rankGrad = (r) => `linear-gradient(180deg, ${RANK[r][0]}, ${RANK[r][1]})`;
+function tileEl(tl, cls = 'tile') {
+  const e = h('div', cls + (tl.small ? ' sm-text' : ''), tl.mono);
+  set(e, { background: tl.tileBg, color: tl.tileFg });
+  return e;
+}
+
+// ---------------------------------------------------------------------------
+// build
+// ---------------------------------------------------------------------------
+// aurora: 4 fixed hues + 1 that follows the current tool's accent
+const BLOBS = [
+  { c: '#6D5BFF', x: 220, y: 380, ax: 160, ay: 120, w: .11, ph: 0 },
+  { c: '#2F6BFF', x: 900, y: 620, ax: 140, ay: 180, w: .09, ph: 1.7 },
+  { c: '#FF5FD2', x: 180, y: 1500, ax: 180, ay: 140, w: .08, ph: 3.1 },
+  { c: '#2CD3FF', x: 920, y: 1700, ax: 150, ay: 120, w: .1, ph: 4.4 },
+  { c: '#9B6BFF', x: 560, y: 1040, ax: 220, ay: 160, w: .07, ph: 2.2 },
+];
+const aurora = document.getElementById('aurora');
+BLOBS.forEach((b) => { b.el = h('div', 'blob'); aurora.appendChild(b.el); });
+const blobBg = (c, a = 1) => `radial-gradient(circle, ${c} 0%, ${c.replace('rgb', 'rgba').replace(')', `,${.42 * a})`)} 34%, transparent 66%)`;
+
+// seeded grain, shifted every other frame
+const grain = document.getElementById('grain');
+{
+  const g = grain.getContext('2d'), im = g.createImageData(540, 960);
+  let s = 1234567;
+  for (let i = 0; i < im.data.length; i += 4) { s = (s * 1103515245 + 12345) & 0x7fffffff; const v = (s >> 8) & 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; }
+  g.putImageData(im, 0, 0);
+  set(grain, { width: '1200px', height: '2100px', left: '-60px', top: '-90px', imageRendering: 'pixelated' });
+}
+
+// header + rank row
+const header = document.getElementById('header');
+const ranksEl = document.getElementById('ranks');
+const SLOT_X = (rank) => 117 + (rank - 1) * 174;   // 1 on the left … 5 on the right
+const slots = [1, 2, 3, 4, 5].map((rank) => {
+  const tl = TOOLS.find((x) => x.rank === rank);
+  const s = h('div', 'slot glass'); s.style.left = SLOT_X(rank) + 'px';
+  const cr = h('div', 'crown', crown(rank));
+  const q = h('div', 'q', '?');
+  const tile = tileEl(tl);
+  const ring = h('div', 'ring'); ring.style.borderColor = tl.accent;
+  const ping = h('div', 'ping'); ping.style.borderColor = RANK[rank][1];
+  s.append(q, tile, ring, ping, cr);
+  ranksEl.appendChild(s);
+  return { s, cr, q, tile, ring, ping, rank, tl };
+});
+
+const ARROW = `<svg viewBox="0 0 44 54" width="40" height="50"><path d="M4 3 L4 42 L14 33 L21 50 L29 46.5 L22 30 L36 30 Z" fill="#fff" stroke="#111" stroke-width="3" stroke-linejoin="round"/></svg>`;
+const VW = 932, VH = 520;
+
+const toolEls = TOOLS.map((tl) => {
+  const s = h('div', 'scene tool');
+  const badge = h('div', 'abs glass badge', `<div class="crown">${crown(tl.rank)}</div><div class="rk">${tl.rank}위</div>`);
+  const rk = badge.querySelector('.rk');
+  set(rk, { background: rankGrad(tl.rank), webkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' });
+  const tag = h('div', 'abs glass tag', `<i></i>${tl.tag}`);
+  tag.querySelector('i').style.background = tl.accent;
+  const name = h('div', 'abs name', [...tl.name].map((c) => `<span>${c === ' ' ? '&nbsp;' : c}</span>`).join(''));
+  const br = h('div', 'abs glass browser');
+  const chrome = h('div', 'chrome');
+  ['#FF5F57', '#FEBC2E', '#28C840'].forEach((c) => { const d = h('div', 'dot'); d.style.background = c; chrome.appendChild(d); });
+  const url = h('div', 'urlbar', `<svg width="18" height="22" viewBox="0 0 20 24"><rect x="2" y="10" width="16" height="12" rx="3" fill="#B9B4DA"/><path d="M5.5 10 V7 a4.5 4.5 0 0 1 9 0 V10" stroke="#B9B4DA" stroke-width="2.6" fill="none"/></svg><span class="host">${tl.host}</span>`);
+  chrome.append(url, h('div', 'live', '<span class="led"></span>실제 사이트'));
+  const load = h('div', 'loadbar'); load.style.background = tl.accent;
+  const vp = h('div', 'viewport');
+  const img = new Image(); img.src = `assets/sites/${tl.img}.jpg`; img.width = tl.W; img.height = tl.H;
+  const pl = h('div', 'pl'); set(pl, { width: tl.W + 'px', height: tl.H + 'px' });
+  const patches = (tl.patches || []).map((p) => { const d = h('div'); set(d, { left: p.x + 'px', top: p.y + 'px', width: p.w + 'px', height: p.h + 'px', background: p.bg, opacity: 0 }); pl.appendChild(d); return d; });
+  let typed = null;
+  if (tl.typed) {
+    typed = h('div', 'typed', '<span class="tx"></span><span class="caret"></span>');
+    set(typed, { left: tl.typed.x + 'px', top: (tl.typed.y - tl.typed.size * 0.62) + 'px', fontSize: tl.typed.size + 'px', color: tl.typed.color, opacity: 0 });
+    pl.appendChild(typed);
+  }
+  const blank = h('div', 'blank');
+  vp.append(img, pl, blank);
+  const cursor = h('div', 'cursor', ARROW);
+  const ripple = h('div', 'ripple'); ripple.style.borderColor = tl.accent;
+  br.append(chrome, load, vp, ripple, cursor);
+  const free = h('div', 'abs free', `<span class="lbl">FREE</span>${tl.free}`);
+  const chips = h('div', 'abs chips');
+  const chipEls = tl.chips.map((c) => { const e = h('div', 'c glass', `<i style="color:${tl.accent}">✓</i>${c}`); chips.appendChild(e); return e; });
+  s.append(badge, tag, name, br, chips, free);
+  document.getElementById('tools').appendChild(s);
+  return { s, badge, tag, name, chars: [...name.children], br, load, img, pl, patches, typed, blank, cursor, ripple, free, chipEls };
+});
+
+// hero
+const hero = document.getElementById('hero');
+const hRays = hero.querySelector('.rays'), hCrown = hero.querySelector('.crown'), hRk = hero.querySelector('.rk');
+let hTile = hero.querySelector('.tile');
+const sparks = Array.from({ length: 18 }, (_, i) => { const e = h('div', 'spark'); hero.appendChild(e); return e; });
+
+// intro
+const intro = document.getElementById('intro');
+const iL1 = intro.querySelector('.l1'), iL2 = intro.querySelector('.l2'), iStrike = intro.querySelector('.strike');
+const iCard = intro.querySelector('.card'), iStamp = intro.querySelector('.stamp');
+const iT1 = intro.querySelector('.t1'), iT2 = intro.querySelector('.t2'), iT3 = intro.querySelector('.t3');
+const l1Chars = [...'유료 결제'].map((c) => { const sp = h('span', null, c === ' ' ? '&nbsp;' : c); iL1.appendChild(sp); return sp; });
+const l2Chars = [...'하지 마세요!'].map((c) => { const sp = h('span', null, c === ' ' ? '&nbsp;' : c); iL2.appendChild(sp); return sp; });
+
+// recap
+const recap = document.getElementById('recap');
+const rTitle = recap.querySelector('.title'), rFoot = recap.querySelector('.foot');
+const rRows = [1, 2, 3, 4, 5].map((rank, i) => {
+  const tl = TOOLS.find((x) => x.rank === rank);
+  const r = h('div', 'abs glass row' + (rank === 1 ? ' first' : ''));
+  r.append(h('div', 'crown', crown(rank)), tileEl(tl), h('div', 'nm', tl.name), h('div', 'tg', tl.tag));
+  r.style.top = (420 + i * 166) + 'px';
+  recap.appendChild(r);
+  return r;
+});
+
+// outro
+const outro = document.getElementById('outro');
+const oL1 = outro.querySelector('.l1'), oL2 = outro.querySelector('.l2'), oSmall = outro.querySelector('.small'), oTiles = outro.querySelector('.tiles');
+const oChars = [...'무료부터!'].map((c) => { const sp = h('span', null, c); oL2.appendChild(sp); return sp; });
+const oTileEls = [1, 2, 3, 4, 5].map((rank) => { const t = tileEl(TOOLS.find((x) => x.rank === rank)); oTiles.appendChild(t); return t; });
+
+// ---------------------------------------------------------------------------
+// render
+// ---------------------------------------------------------------------------
+function show(el, on) { el.style.display = on ? 'block' : 'none'; }
+const activeTool = (t) => TOOLS.filter((tl) => t >= tl.sc.start - 0.3).pop();
+
+function renderBackground(t) {
+  // the 5th blob takes the accent of the current tool, cross-fading around each cut
+  let acc = '#9B6BFF';
+  if (t >= T_FIRST - 0.3 && t < T_RECAP) {
+    const i = TOOLS.indexOf(activeTool(t));
+    const prev = i > 0 ? TOOLS[i - 1].accent : '#9B6BFF';
+    acc = mix(prev, TOOLS[i].accent, eSine(seg(t, TOOLS[i].sc.start - 0.3, TOOLS[i].sc.start + 0.5)));
+  } else if (t >= T_RECAP) acc = mix(TOOLS[4].accent, '#FFB84D', eSine(seg(t, T_RECAP, T_RECAP + 1.2)));
+  else acc = mix('#9B6BFF', '#9B6BFF', 0);
+  BLOBS.forEach((b, i) => {
+    const c = i === 4 ? acc : mix(b.c, b.c, 0);
+    const breathe = 1 + 0.08 * Math.sin(t * 0.6 + b.ph);
+    set(b.el, { background: blobBg(c), transform: `translate(${b.x + Math.sin(t * b.w * 6.28 + b.ph) * b.ax}px, ${b.y + Math.cos(t * b.w * 5.1 + b.ph) * b.ay}px) scale(${breathe})` });
+  });
+  const f = Math.floor(t * FPS / 2);
+  set(grain, { transform: `translate(${(hash(f) - .5) * 60}px, ${(hash(f + 99) - .5) * 80}px)` });
+}
+
+function renderChrome(t) {
+  // header + rank row: enter with the intro title, leave for the recap
+  const tIn = SC.intro.marks.title ?? 1.4;
+  const pin = eOut(seg(t, tIn + 0.1, tIn + 0.6));
+  const pout = eInOut(seg(t, T_RECAP - 0.1, T_RECAP + 0.4));
+  set(header, { opacity: pin, transform: `translateX(-50%) translateY(${(1 - pin) * -40}px) scale(${0.94 + 0.06 * pin})` });
+  ranksEl.style.opacity = 1 - pout;
+  ranksEl.style.transform = `translateY(${-pout * 60}px)`;
+  const cur = t >= T_FIRST - 0.3 && t < T_RECAP ? activeTool(t) : null;
+  slots.forEach((sl, i) => {
+    const pIn = pop(t, tIn + 0.25 + (4 - i) * 0.08, 0.36, 1.1);
+    const tl = sl.tl, tLand = tl.sc.start + tl.land;
+    const revealed = t >= tLand;
+    const isCur = cur === tl;
+    const curP = isCur ? eOut(seg(t, tl.sc.start, tl.sc.start + 0.4)) * (1 - seg(t, tl.sc.start + tl.sc.dur - 0.3, tl.sc.start + tl.sc.dur)) : 0;
+    const bob = Math.sin(t * 2 + i) * 3;
+    set(sl.s, { opacity: pIn > 0 ? 1 : 0, transform: `translateY(${(1 - Math.min(pIn, 1)) * -50 + bob}px) scale(${Math.max(pIn, .001) * (1 + 0.07 * curP)})` });
+    sl.q.style.opacity = revealed ? 0 : 1;
+    const land = pop(t, tLand, 0.32, 1.18);
+    set(sl.tile, { opacity: revealed ? 1 : 0, transform: `scale(${revealed ? land : 0.001})` });
+    sl.ring.style.opacity = curP * (0.75 + 0.25 * Math.sin(t * 5));
+    const pp = seg(t, tLand, tLand + 0.6);
+    set(sl.ping, { opacity: pp > 0 && pp < 1 ? 1 - pp : 0, transform: `scale(${1 + eOut(pp) * 0.45})` });
+    sl.cr.style.transform = `translateY(${land > 0 && land < 1.05 ? (1.05 - land) * -30 : 0}px) rotate(${Math.sin(t * 1.6 + i) * 4}deg)`;
+  });
+}
+
+function renderIntro(t) {
+  const M = SC.intro.marks, D = SC.intro.dur;
+  const mStop = M.stop ?? 0.1, mTitle = M.title ?? 1.4, m5 = M.five ?? 3.0;
+  // hook: 유료 결제 / 하지 마세요! — on screen from frame 0
+  const out1 = eIn(seg(t, mTitle - 0.32, mTitle + 0.05));
+  l1Chars.forEach((sp, i) => {
+    const s = t < 0.02 ? 1 : pop(t, -0.1 + i * 0.05, 0.3);
+    set(sp, { transform: `translateY(${-out1 * 120}px) scale(${Math.max(s, .001) * (1 - out1 * 0.2)})`, opacity: (s > 0 ? 1 : 0) * (1 - out1), filter: `blur(${out1 * 14}px)` });
+  });
+  const ps = eOut(seg(t, mStop + 0.45, mStop + 0.75));
+  set(iStrike, { transform: `scaleX(${ps}) rotate(-4deg)`, opacity: 1 - out1 });
+  l2Chars.forEach((sp, i) => {
+    const s = pop(t, mStop + 0.35 + i * 0.05, 0.3);
+    set(sp, { transform: `translateY(${(1 - Math.min(s, 1)) * 40 - out1 * 120}px) scale(${Math.max(s, .001)})`, opacity: (s > 0 ? 1 : 0) * (1 - out1), filter: `blur(${out1 * 14}px)` });
+  });
+  const pc = eOut(seg(t, 0.05, 0.6));
+  set(iCard, { opacity: pc * (1 - out1), transform: `translateY(${(1 - pc) * 160 + Math.sin(t * 1.4) * 8}px) rotate(${-7 + Math.sin(t * .9) * 1.5}deg) scale(${1 - out1 * .15})` });
+  const st = pop(t, mStop + 0.8, 0.3, 1.3);
+  set(iStamp, { opacity: (st > 0 ? 1 : 0) * (1 - out1), transform: `scale(${Math.max(st, .001)}) rotate(${-14 + (1 - Math.min(st, 1)) * -30}deg)` });
+
+  // title: 무료로도 충분한 / AI 앱 / TOP 5
+  const exitP = eIn(seg(t, D - 0.35, D));
+  const p1 = eOut(seg(t, mTitle, mTitle + 0.4));
+  set(iT1, { opacity: p1 * (1 - exitP), transform: `translateY(${(1 - p1) * 30}px)`, filter: `blur(${exitP * 12}px)` });
+  const p2 = pop(t, mTitle + 0.18, 0.34);
+  set(iT2, { opacity: (p2 > 0 ? 1 : 0) * (1 - exitP), transform: `scale(${Math.max(p2, .001)})`, filter: `blur(${exitP * 12}px)` });
+  const p3 = pop(t, m5 - 0.05, 0.36, 1.2);
+  set(iT3, { opacity: (p3 > 0 ? 1 : 0) * (1 - exitP), transform: `scale(${Math.max(p3, .001) * (1 + exitP * .3)}) rotate(${(1 - Math.min(p3, 1)) * -12}deg)`,
+    backgroundPosition: `${(1 - seg(t, m5, m5 + 1.2)) * 100}% 0` });
+}
+
+function renderHero(t) {
+  const tl = TOOLS.find((x) => t >= x.sc.start + x.R + HERO_IN && t < x.sc.start + x.land);
+  if (!tl) { hero.style.display = 'none'; return; }
+  hero.style.display = 'block';
+  if (hero.dataset.id !== tl.id) {
+    hero.dataset.id = tl.id;
+    hCrown.innerHTML = crown(tl.rank);
+    const nt = tileEl(tl); hTile.replaceWith(nt); hTile = nt;
+    hRk.textContent = tl.rank === 1 ? '대망의 1위' : `${tl.rank}위`;
+    set(hRk, { background: rankGrad(tl.rank), webkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' });
+    hRays.style.background = `repeating-conic-gradient(from 0deg, ${tl.accent}55 0deg 7deg, transparent 7deg 22deg)`;
+    sparks.forEach((s, i) => { s.style.background = i % 3 === 0 ? RANK[tl.rank][0] : i % 3 === 1 ? tl.accent : '#FFFFFF'; });
+  }
+  const lt = t - tl.sc.start, R = tl.R;
+  const pIn = pop(lt, R + HERO_IN, 0.36, 1.12);
+  const fly = eInOut(seg(lt, R + HERO_HOLD, R + HERO_HOLD + HERO_FLY));
+  const x0 = 540, y0 = 860;
+  const x1 = SLOT_X(tl.rank) + 75, y1 = 236 + 75;
+  // the tile's centre sits 300 px into the 520 px hero box; fly so the tile lands on the slot
+  const sc = lerp(1, 112 / 300, fly) * Math.max(pIn, .001);
+  const cx = lerp(x0, x1, fly), cy = lerp(y0, y1, fly) + Math.sin(lt * 2.4) * 6 * (1 - fly);
+  set(hero, { left: cx + 'px', top: (cy - (300 - 260) * sc) + 'px', transform: `scale(${sc}) rotate(${(1 - Math.min(pIn, 1)) * -10 + Math.sin(lt * 1.8) * 1.5 * (1 - fly)}deg)` });
+  const fade = 1 - fly;
+  set(hRays, { opacity: 0.85 * fade * Math.min(pIn, 1) * (tl.rank === 1 ? 1.25 : 1), transform: `rotate(${lt * 40}deg) scale(${0.8 + 0.2 * Math.min(pIn, 1)})` });
+  hCrown.style.opacity = fade; hRk.style.opacity = fade;
+  hCrown.style.transform = `translateY(${(1 - seg(lt, R + HERO_IN + 0.05, R + 0.35)) * -140}px) rotate(${Math.sin(lt * 3) * 4}deg)`;
+  // sparks burst on the reveal (more for 1위)
+  sparks.forEach((s, i) => {
+    const n = tl.rank === 1 ? 18 : 10;
+    if (i >= n) { s.style.opacity = 0; return; }
+    const p = seg(lt, R + 0.02 + hash(i) * 0.08, R + 0.9 + hash(i + 7) * 0.4);
+    const ang = (i / n) * Math.PI * 2 + hash(i + 3);
+    const dist = 170 + hash(i + 11) * 220;
+    set(s, { left: (180 + Math.cos(ang) * dist * eOut(p)) + 'px', top: (300 + Math.sin(ang) * dist * eOut(p) + eIn(p) * 80) + 'px',
+      opacity: p > 0 && p < 1 ? (1 - p) * fade : 0, transform: `scale(${1.4 - p})` });
+  });
+}
+
+function camAt(tl, lt) {
+  const [cx0, cy0, z] = keyed(tl.cam, lt, 3);
+  const s = Math.max(VW / tl.W, VH / tl.H) * z;
+  const hw = VW / 2 / s, hh = VH / 2 / s;
+  const cx = clamp(cx0, hw, tl.W - hw), cy = clamp(cy0, hh, tl.H - hh);
+  return { cx, cy, s };
+}
+const toScreen = (cam, x, y) => [(x - cam.cx) * cam.s + VW / 2, (y - cam.cy) * cam.s + VH / 2];
+
+function renderTool(i, lt) {
+  const tl = TOOLS[i], e = toolEls[i], D = tl.sc.dur, C0 = tl.C0;
+  const exit = eIn(seg(lt, D - 0.35, D));
+  e.s.style.opacity = 1 - exit;
+  e.s.style.filter = exit > 0 ? `blur(${exit * 14}px)` : 'none';
+  e.s.style.transform = `translateY(${-exit * 40}px)`;
+
+  const pb = pop(lt, C0, 0.34);
+  set(e.badge, { opacity: pb > 0 ? 1 : 0, transform: `scale(${Math.max(pb, .001)}) rotate(${(1 - Math.min(pb, 1)) * -18}deg)` });
+  const pt = eOut(seg(lt, C0 + 0.08, C0 + 0.45));
+  set(e.tag, { opacity: pt, transform: `translateX(${(1 - pt) * -40}px)` });
+  e.chars.forEach((sp, k) => {
+    const s = pop(lt, C0 + 0.14 + k * 0.03, 0.3);
+    const wig = Math.sin(lt * 3 + k * .6) * 2 * seg(lt, C0 + 1, C0 + 1.5);
+    set(sp, { transform: `translateY(${(1 - Math.min(s, 1)) * 36 + wig}px) scale(${Math.max(s, .001)})`, opacity: s > 0 ? 1 : 0 });
+  });
+
+  // browser rises with a slight tilt that settles (parallax depth)
+  const pr = eOut(seg(lt, C0 + 0.1, C0 + 0.7));
+  set(e.br, { opacity: pr, transform: `perspective(1600px) translateY(${(1 - pr) * 220}px) rotateX(${(1 - pr) * 14}deg) scale(${0.94 + 0.06 * pr})` });
+  const pl = seg(lt, C0 + 0.35, tl.P0);
+  set(e.load, { width: (eOut(pl) * 100) + '%', opacity: lt < tl.P0 + 0.1 ? (pl > 0 ? 1 : 0) : 1 - seg(lt, tl.P0 + 0.1, tl.P0 + 0.3) });
+  e.blank.style.opacity = 1 - eOut(seg(lt, tl.P0 - 0.1, tl.P0 + 0.15));
+
+  const cam = camAt(tl, lt);
+  const tr = `translate(${-cam.cx * cam.s + VW / 2}px, ${-cam.cy * cam.s + VH / 2}px) scale(${cam.s})`;
+  e.img.style.transform = tr; e.pl.style.transform = tr;
+  (tl.patches || []).forEach((p, k) => { e.patches[k].style.opacity = eOut(seg(lt, p.t, p.t + 0.15)); });
+  if (tl.typed) {
+    const ty = tl.typed, n = Math.round([...ty.text].length * seg(lt, ty.t0, ty.t1));
+    e.typed.querySelector('.tx').textContent = [...ty.text].slice(0, n).join('');
+    e.typed.style.opacity = lt >= ty.t0 - 0.05 ? 1 : 0;
+    e.typed.querySelector('.caret').style.opacity = Math.floor(lt * 3) % 2 === 0 || lt < ty.t1 ? 1 : 0;
+  }
+
+  const pts = tl.cur.map(([kt, x, y]) => [kt, ...toScreen(camAt(tl, kt), x, y)]);
+  const [mx, my] = keyed(pts, lt, 2);
+  let press = 0;
+  for (const c of tl.clicks) press = Math.max(press, 1 - Math.abs(lt - c) / 0.09);
+  set(e.cursor, { transform: `translate(${mx + 14 - 4}px, ${my + 74 - 3}px) scale(${1 - clamp(press) * 0.18})`, opacity: eOut(seg(lt, tl.P0, tl.P0 + .2)) });
+  let rip = null;
+  for (const c of tl.clicks) if (lt >= c && lt < c + 0.5) rip = c;
+  if (rip != null) {
+    const p = seg(lt, rip, rip + 0.5);
+    const [rx, ry] = keyed(pts, rip, 2);
+    set(e.ripple, { left: (rx + 14) + 'px', top: (ry + 74) + 'px', opacity: 1 - p, transform: `scale(${0.3 + eOut(p) * 1.2})` });
+  } else e.ripple.style.opacity = 0;
+
+  // chips stagger in after the page loads; FREE badge pops on its word
+  e.chipEls.forEach((c, k) => {
+    const s = pop(lt, tl.P0 + 0.1 + k * 0.14, 0.3);
+    set(c, { opacity: s > 0 ? 1 : 0, transform: `translateY(${(1 - Math.min(s, 1)) * 30 + Math.sin(lt * 2 + k) * 3}px) scale(${Math.max(s, .001)})` });
+  });
+  const sf = pop(lt, tl.tFree, 0.34, 1.2);
+  set(e.free, { opacity: sf > 0 ? 1 : 0, transform: `scale(${Math.max(sf, .001)}) rotate(${-3 + Math.sin(lt * 4) * 1.5}deg)` });
+}
+
+function renderRecap(lt) {
+  const M = SC.recap.marks, D = SC.recap.dur;
+  const pt = pop(lt, 0.1, 0.34);
+  set(rTitle, { opacity: pt > 0 ? 1 : 0, transform: `scale(${Math.max(pt, .001)})` });
+  rRows.forEach((r, i) => {
+    const t0 = (M['row' + i] ?? 0.6 + i * 0.5) - 0.15;
+    const p = eOut(seg(lt, t0, t0 + 0.4));
+    const glow = i === 0 ? 1 + 0.02 * Math.sin(lt * 4) : 1;
+    set(r, { opacity: p, transform: `translateX(${(1 - p) * (i % 2 ? -600 : 600)}px) scale(${glow})` });
+  });
+  const tf = SC.recap.lines[0].end - SC.recap.start + 0.1;
+  const pf = pop(lt, tf, 0.34);
+  set(rFoot, { opacity: (pf > 0 ? 1 : 0) * (1 - eIn(seg(lt, D - 0.3, D))), transform: `scale(${Math.max(pf, .001)})` });
+  recap.style.opacity = 1 - eIn(seg(lt, D - 0.3, D));
+}
+
+function renderOutro(lt) {
+  const m2 = SC.outro.marks.l2 ?? 0.6;
+  const p1 = eOut(seg(lt, 0.0, 0.4));
+  set(oL1, { opacity: p1, transform: `translateY(${(1 - p1) * 50}px)` });
+  oChars.forEach((sp, i) => {
+    const s = pop(lt, m2 - 0.05 + i * 0.07, 0.34, 1.2);
+    set(sp, { transform: `translateY(${Math.sin(lt * 2.6 + i) * 8}px) scale(${Math.max(s, .001)})`, opacity: s > 0 ? 1 : 0 });
+  });
+  oTileEls.forEach((tEl, i) => {
+    const s = pop(lt, m2 + 0.5 + i * 0.08, 0.3);
+    set(tEl, { opacity: s > 0 ? 1 : 0, transform: `translateY(${Math.sin(lt * 2 + i * .9) * 10}px) scale(${Math.max(s, .001) * 0.82})` });
+  });
+  const ps = eOut(seg(lt, m2 + 1.0, m2 + 1.4));
+  set(oSmall, { opacity: ps, transform: `translateY(${(1 - ps) * 20}px)` });
+}
+
+const subLine = document.querySelector('#subs .line');
+function renderSubs(t) {
+  const cur = SUBS.find((c) => t >= c.start - 0.04 && t < c.end + 0.12);
+  if (!cur) { subLine.style.opacity = 0; return; }
+  if (subLine.textContent !== cur.text) subLine.textContent = cur.text;
+  const p = eOut(seg(t, cur.start - 0.04, cur.start + 0.1));
+  set(subLine, { opacity: p, transform: `translateY(${(1 - p) * 16}px) scale(${0.95 + 0.05 * p})` });
+}
+
+window.renderAt = async (t) => {
+  renderBackground(t);
+  renderChrome(t);
+  show(intro, t < T_FIRST);
+  if (t < T_FIRST) renderIntro(t);
+  toolEls.forEach((e, i) => {
+    const sc = TOOLS[i].sc;
+    const on = t >= sc.start && t < sc.start + sc.dur;
+    show(e.s, on);
+    if (on) renderTool(i, t - sc.start);
+  });
+  renderHero(t);
+  show(recap, t >= T_RECAP && t < T_OUTRO);
+  if (t >= T_RECAP && t < T_OUTRO) renderRecap(t - T_RECAP);
+  show(outro, t >= T_OUTRO);
+  if (t >= T_OUTRO) renderOutro(t - T_OUTRO);
+  renderSubs(t);
+};
+
+// cue sheet for audio.py (absolute seconds)
+window.CUES = (() => {
+  const I = SC.intro.marks, RM = SC.recap.marks;
+  const cues = { duration: DURATION, bpm: 100, tools_start: T_FIRST, outro_start: T_OUTRO, beat_in: I.title ?? 1.4,
+    whoosh: [], rise: [], chime: [], land: [], pop: [], click: [], type: [], ding: [], tick: [], hit: [], boom: [], final: [] };
+  cues.hit.push(0.0);
+  cues.pop.push((I.stop ?? 0.1) + 0.35);
+  cues.boom.push((I.stop ?? 0.1) + 0.8);                       // stamp
+  cues.whoosh.push(I.title ?? 1.4);
+  [0, 1, 2, 3, 4].forEach((i) => cues.tick.push((I.title ?? 1.4) + 0.25 + i * 0.08));
+  cues.chime.push((I.five ?? 3.0) - 0.05);
+  TOOLS.forEach((tl) => {
+    const t0 = tl.sc.start;
+    cues.whoosh.push(t0);
+    cues.rise.push(t0 + tl.R);
+    cues.chime.push(t0 + tl.R);
+    if (tl.rank === 1) cues.boom.push(t0 + tl.R);
+    cues.land.push(t0 + tl.land);
+    cues.pop.push(t0 + tl.C0);
+    tl.chips.forEach((_, k) => cues.pop.push(t0 + tl.P0 + 0.1 + k * 0.14));
+    tl.clicks.forEach((c) => cues.click.push(t0 + c));
+    if (tl.typed) { const n = [...tl.typed.text].length; for (let k = 0; k < n; k += 1) cues.type.push(t0 + tl.typed.t0 + (tl.typed.t1 - tl.typed.t0) * k / n); }
+    cues.ding.push(t0 + tl.tFree);
+  });
+  cues.whoosh.push(T_RECAP);
+  cues.pop.push(T_RECAP + 0.1);
+  [0, 1, 2, 3, 4].forEach((i) => cues.tick.push(T_RECAP + (RM['row' + i] ?? 0.6 + i * 0.5) - 0.15));
+  cues.ding.push(SC.recap.lines[0].end + 0.1);
+  cues.whoosh.push(T_OUTRO);
+  cues.final.push(T_OUTRO + (SC.outro.marks.l2 ?? 0.6) - 0.05);
+  return cues;
+})();
+
+const FONT_LOADS = ['40px BHSL', '40px BHSK', '500 40px Pretendard', '700 40px Pretendard', '800 40px Pretendard', '900 40px Pretendard']
+  .map((f) => document.fonts.load(f, 'Aa가힣'));
+Promise.all([...FONT_LOADS, document.fonts.ready, ...toolEls.map((e) => e.img.decode().catch(() => {}))]).then(async () => {
+  const fit = (el, maxW) => { const fs = parseFloat(getComputedStyle(el).fontSize); if (el.scrollWidth > maxW) el.style.fontSize = Math.floor(fs * maxW / el.scrollWidth) + 'px'; };
+  toolEls.forEach((e) => { e.s.style.display = 'block'; fit(e.name, 790); e.s.style.display = 'none'; });
+  await window.renderAt(0);
+  window.__ready = true;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,333 @@
+{
+ "duration": 55.289,
+ "voiced": true,
+ "voice": "8f554770038046a382259c8871cc325d",
+ "scenes": [
+  {
+   "id": "intro",
+   "start": 0.0,
+   "dur": 4.067,
+   "marks": {
+    "stop": 0.1,
+    "title": 1.443,
+    "five": 3.05
+   },
+   "lines": [
+    {
+     "start": 0.1,
+     "end": 1.293,
+     "subs": [
+      {
+       "text": "유료 결제하지 마세요!",
+       "start": 0.1,
+       "end": 1.293
+      }
+     ],
+     "nosub": true
+    },
+    {
+     "start": 1.443,
+     "end": 3.617,
+     "subs": [
+      {
+       "text": "무료로도 충분한 AI 앱 TOP 5",
+       "start": 1.443,
+       "end": 3.617
+      }
+     ],
+     "nosub": true
+    }
+   ]
+  },
+  {
+   "id": "chatgpt",
+   "start": 4.067,
+   "dur": 7.761,
+   "marks": {
+    "reveal": 0.45,
+    "free": 4.623
+   },
+   "lines": [
+    {
+     "start": 4.517,
+     "end": 8.011,
+     "subs": [
+      {
+       "text": "5위, ChatGPT",
+       "start": 4.517,
+       "end": 6.105
+      },
+      {
+       "text": "이제는 기본 출발점 같은 도구",
+       "start": 6.105,
+       "end": 8.011
+      }
+     ],
+     "nosub": false
+    },
+    {
+     "start": 8.211,
+     "end": 11.278,
+     "subs": [
+      {
+       "text": "무료로도 웹 검색·파일 업로드",
+       "start": 8.211,
+       "end": 10.109
+      },
+      {
+       "text": "이미지 생성까지!",
+       "start": 10.109,
+       "end": 11.278
+      }
+     ],
+     "nosub": false
+    }
+   ]
+  },
+  {
+   "id": "perplexity",
+   "start": 11.828,
+   "dur": 7.493,
+   "marks": {
+    "reveal": 0.45,
+    "free": 4.832
+   },
+   "lines": [
+    {
+     "start": 12.278,
+     "end": 16.46,
+     "subs": [
+      {
+       "text": "4위, 퍼플렉시티",
+       "start": 12.278,
+       "end": 13.672
+      },
+      {
+       "text": "출처를 달아서",
+       "start": 13.672,
+       "end": 14.718
+      },
+      {
+       "text": "보고서처럼 정리해 줘요",
+       "start": 14.718,
+       "end": 16.46
+      }
+     ],
+     "nosub": false
+    },
+    {
+     "start": 16.66,
+     "end": 18.771,
+     "subs": [
+      {
+       "text": "기본 검색은 무료로 넉넉하게!",
+       "start": 16.66,
+       "end": 18.771
+      }
+     ],
+     "nosub": false
+    }
+   ]
+  },
+  {
+   "id": "claude",
+   "start": 19.321,
+   "dur": 7.491,
+   "marks": {
+    "reveal": 0.45,
+    "free": 4.869
+   },
+   "lines": [
+    {
+     "start": 19.771,
+     "end": 23.048,
+     "subs": [
+      {
+       "text": "3위, 클로드",
+       "start": 19.771,
+       "end": 20.806
+      },
+      {
+       "text": "긴 문서·PDF 분석에 강해요",
+       "start": 20.806,
+       "end": 23.048
+      }
+     ],
+     "nosub": false
+    },
+    {
+     "start": 23.248,
+     "end": 26.262,
+     "subs": [
+      {
+       "text": "보고서를 올리면",
+       "start": 23.248,
+       "end": 24.358
+      },
+      {
+       "text": "핵심 요약·포인트를 바로!",
+       "start": 24.358,
+       "end": 26.262
+      }
+     ],
+     "nosub": false
+    }
+   ]
+  },
+  {
+   "id": "grammarly",
+   "start": 26.812,
+   "dur": 8.697,
+   "marks": {
+    "reveal": 0.45,
+    "free": 5.799
+   },
+   "lines": [
+    {
+     "start": 27.262,
+     "end": 30.777,
+     "subs": [
+      {
+       "text": "2위, 그래머리",
+       "start": 27.262,
+       "end": 28.492
+      },
+      {
+       "text": "영어 이메일, 보내기 전에 꼭!",
+       "start": 28.492,
+       "end": 30.777
+      }
+     ],
+     "nosub": false
+    },
+    {
+     "start": 30.977,
+     "end": 34.959,
+     "subs": [
+      {
+       "text": "맞춤법·문법 교정은 무료",
+       "start": 30.977,
+       "end": 32.882
+      },
+      {
+       "text": "AI 글쓰기도 한 달 100번",
+       "start": 32.882,
+       "end": 34.959
+      }
+     ],
+     "nosub": false
+    }
+   ]
+  },
+  {
+   "id": "clovanote",
+   "start": 35.509,
+   "dur": 9.423,
+   "marks": {
+    "reveal": 0.828,
+    "free": 7.551
+   },
+   "lines": [
+    {
+     "start": 35.959,
+     "end": 37.754,
+     "subs": [
+      {
+       "text": "대망의 1위, 네이버 클로바노트!",
+       "start": 35.959,
+       "end": 37.754
+      }
+     ],
+     "nosub": false
+    },
+    {
+     "start": 37.954,
+     "end": 41.537,
+     "subs": [
+      {
+       "text": "회의를 녹음하면 화자별로 받아 적고",
+       "start": 37.954,
+       "end": 40.291
+      },
+      {
+       "text": "AI가 요약까지!",
+       "start": 40.291,
+       "end": 41.537
+      }
+     ],
+     "nosub": false
+    },
+    {
+     "start": 41.737,
+     "end": 44.382,
+     "subs": [
+      {
+       "text": "한국어 인식이 뛰어나고",
+       "start": 41.737,
+       "end": 43.129
+      },
+      {
+       "text": "한 달 300분 무료!",
+       "start": 43.129,
+       "end": 44.382
+      }
+     ],
+     "nosub": false
+    }
+   ]
+  },
+  {
+   "id": "recap",
+   "start": 44.932,
+   "dur": 6.582,
+   "marks": {
+    "row0": 1.205,
+    "row1": 2.203,
+    "row2": 3.059,
+    "row3": 3.772,
+    "row4": 4.77
+   },
+   "lines": [
+    {
+     "start": 45.282,
+     "end": 50.414,
+     "subs": [
+      {
+       "text": "클로바노트 · 그래머리 · 클로드",
+       "start": 45.282,
+       "end": 47.943
+      },
+      {
+       "text": "퍼플렉시티 · ChatGPT",
+       "start": 47.943,
+       "end": 50.414
+      }
+     ],
+     "nosub": false
+    }
+   ]
+  },
+  {
+   "id": "outro",
+   "start": 51.514,
+   "dur": 3.775,
+   "marks": {
+    "l2": 1.054
+   },
+   "lines": [
+    {
+     "start": 51.814,
+     "end": 53.489,
+     "subs": [
+      {
+       "text": "결제하기 전에, 무료부터 써 보세요!",
+       "start": 51.814,
+       "end": 53.489
+      }
+     ],
+     "nosub": true
+    }
+   ]
+  }
+ ]
+}

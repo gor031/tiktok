@@ -1,7 +1,8 @@
 {
   "_comment": "say = text sent to TTS (spelled for pronunciation), sub = on-screen subtitle, '|' splits subtitle cards, marks = visual beats tied to a word in say",
-  "voice": "b9f5a662e3114d3787396b40566a2db4",
-  "voice_alt": "c866510a9676416a95d0c4858fd20899",
+  "voice": "8f554770038046a382259c8871cc325d",
+  "voice_name": "2,30대 남성 (정보성 유튜버)",
+  "voice_alt": "b9f5a662e3114d3787396b40566a2db4",
   "model": "s1",
   "speed": 1.1,
   "scenes": [
